@@ -1,3 +1,5 @@
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
+
 """
 This is a server for sending out sACN and receiving sACN data.
 http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf

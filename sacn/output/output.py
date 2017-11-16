@@ -1,3 +1,5 @@
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
+
 from ..messages.data_packet import DataPacket
 
 

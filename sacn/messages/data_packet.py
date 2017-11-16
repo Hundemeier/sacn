@@ -1,7 +1,9 @@
-'''
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
+
+"""
 This represents a framing layer and a DMP layer from the E1.31 Standard
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
-'''
+"""
 from .root_layer import RootLayer
 
 _VECTOR_E131_DATA_PACKET = (0, 0, 0, 0x02)

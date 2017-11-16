@@ -10,6 +10,7 @@ Currently missing features:
  * discovery messages (receiving and sending)
  * correct stream termination with stream_termination bit (although the most devices are
   not supporting this on the receiver site)
+ * more advanced receiving methods (you only get the raw DataPacket without filtering after priority or other factors)
 
 ###The Internals
 ####sending
@@ -113,7 +114,16 @@ Functions:
 This is an abstract representation of an sACN Data packet that carries the DMX data. This class is used internally by
 the module and is used in the callbacks of the receiver.
 
-
+The DataPacket provides following attributes:
+ * `sourceName: str`: a string that is used to identify the source. Only the first 64 bytes are used.
+ * `priority: int`: the priority used to manage multiple DMX data on one receiver. [1-200] Default: 100
+ * `universe: int`: the universe for the whole message and its DMX data. [1-63999]
+ * `sequence: int`: the sequence number. Should increment for every new message and can be used to check for wrong
+ order of arriving packets.
+ * `option_StreamTerminated: bool`: True if this packet is the last one of the stream for the given universe.
+ * `option_PreviewData: bool`: True if this data is for visualization purposes.
+ * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
+ Filled with 0 for empty spaces.
 
 
 

@@ -1,5 +1,6 @@
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
+
 import socket
-import sys
 import threading
 
 from .messages.data_packet import DataPacket, calculate_multicast_addr

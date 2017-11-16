@@ -1,7 +1,9 @@
-'''
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
+
+"""
 This represents a root layer of an ACN Message.
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
-'''
+"""
 
 _FIRST_INDEX = \
     (0, 0x10, 0, 0, 0x41, 0x53, 0x43, 0x2d, 0x45,
