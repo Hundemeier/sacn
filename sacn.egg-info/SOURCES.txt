@@ -1,7 +1,7 @@
+README.md
 sacn/__init__.py
 sacn/receiver.py
 sacn/sender.py
-sacn/testing.py
 sacn.egg-info/PKG-INFO
 sacn.egg-info/SOURCES.txt
 sacn.egg-info/dependency_links.txt

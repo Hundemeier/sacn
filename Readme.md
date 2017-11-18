@@ -1,4 +1,4 @@
-## sACN / E1.31 module
+# sACN / E1.31 module
 **BETA!** And therefore currently not in the pypi!
 
 This module is a simple sACN library that support the standard DMX message of the protocol.
@@ -11,8 +11,8 @@ Currently missing features:
   not supporting this on the receiver site)
  * more advanced receiving methods (you only get the raw DataPacket without filtering after priority or other factors)
 
-### The Internals
-#### sending
+## The Internals
+### Sending
 You can create a new `sACNsender` object and provide the necessary information. Then you have to use `start()`.
 This creates a new thread that is responsible for sending out the data. If the data is not changed, the same DMX data
 is send out every second.
@@ -20,13 +20,13 @@ is send out every second.
 The thread sends out the data every *1/fps* seconds. This provides synchronization (the data for all universes is send
 out the same time) and reduces network traffic even if you give the sender new data more often than the *fps*.
 You can tweak this *fps* by simply change it when creating the `sACNsender` object.
-#### receiving
+### Receiving
 A very simple solution, as you just create a `sACNreceiver` object and use `start()` a new thread that is running in
 the background and calls the callbacks when new sACN data arrives.
 
 ---
-### Usage
-#### sending
+## Usage
+### Sending
 To use the sending functionality you have to use the `sender.sACNsender`.
 
 ```python
@@ -74,7 +74,7 @@ Note that a bind address is needed on Windows for sending out multicast packets.
  * `cid: tuple`: the cid. If not given, a random CID will be generated. See the [standard][e1.31] for more information.
  * `fps: int` the frames per second. See explanation above. Has to be >0.
 
-#### receiving
+### Receiving
 To use the receiving functionality you have to use the `receiver.sACNreceiver`.
 
 ```python
@@ -109,7 +109,7 @@ Functions:
  bind the receiver to a valid IP-Address. That is done in the constructor of a sACNreceiver.
  * `leave_multicast(<universe>)`: leave the multicast group specified by the universe.
 
-#### DataPacket
+### DataPacket
 This is an abstract representation of an sACN Data packet that carries the DMX data. This class is used internally by
 the module and is used in the callbacks of the receiver.
 
@@ -126,4 +126,4 @@ The DataPacket provides following attributes:
 
 
 
-[e1.31](http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf)
+[e1.31]: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf

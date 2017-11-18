@@ -2,10 +2,10 @@ Metadata-Version: 1.0
 Name: sacn
 Version: 0.1
 Summary: sACN / E1.31 module for easy handling of DMX data over ethernet
-Home-page: UNKNOWN
-Author: Thomas Neteler
-Author-email: neteler.thomas@gmail.com
-License: No License available! No publication!
+Home-page: https://www.github.com/Hundemeier/sacn
+Author: Hundemeier
+Author-email: hundemeier99@gmail.com
+License: MIT License
 Description-Content-Type: UNKNOWN
 Description: UNKNOWN
 Platform: UNKNOWN
