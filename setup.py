@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='sacn',
-      version='0.1',
+      version='0.2',
       description='sACN / E1.31 module for easy handling of DMX data over ethernet',
       url='https://www.github.com/Hundemeier/sacn',
       author='Hundemeier',

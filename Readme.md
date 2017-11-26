@@ -59,7 +59,7 @@ Available Attributes are:
  the same receiver the data with the highest priority wins. Default: 100
  * `preview_data: bool`: Flag to mark the data as preview data for visualization purposes. Default: False
  * `dmx_data: tuple`: the DMX data as a tuple. Max length is 512 and for legacy devices all data that is smaller than
- 512 is merged to a 512 length tuple with 0 as filler value. The values in the tuple have to be [0-511]!
+ 512 is merged to a 512 length tuple with 0 as filler value. The values in the tuple have to be [0-255]!
 
 `sender.sACNsender` Creates a sender object. A sender is used to manage multiple sACN universes and handles their output.
 DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
@@ -86,10 +86,10 @@ receiver = sacn.receiver.sACNreceiver()
 receiver.start()  # start the receiving thread
 
 # define a callback function
+@receiver.listen_universe(1)
 def callback(packet):  # packet type: sacn.messages.data_packet
     print(packet.dmxData)  # print the received DMX data
 
-receiver.callbacks.append(callback)
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(1)
 

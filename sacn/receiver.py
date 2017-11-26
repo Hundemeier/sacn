@@ -2,9 +2,13 @@
 
 import socket
 import threading
+import time
+import math
 
 from .messages.data_packet import DataPacket, calculate_multicast_addr
 
+E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
+LISTEN_ON_OPTIONS = ("timeout")
 
 class sACNreceiver:
     def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568):
@@ -27,20 +31,55 @@ class sACNreceiver:
             pass
         self.sock.bind((bind_address, bind_port))
 
-    def listen(self, universe: int):
+    def listen_universe(self, universe: int):
         """
         This is a decorator for callbacks that should react on the given universe.
         The callbacks are getting inherited if the dmx data was changed
         :param universe: the universe to listen on
         """
         def decorator(f: callable):
-            # add callback to the _callbacks list for the universe
-            try:
-                self._callbacks[universe].append(f)
-            except AttributeError:  # try to append
-                self._callbacks[universe] = list(f)
+            self.register_universe_callback(universe=universe, func=f)
             return f
         return decorator
+
+    def register_universe_callback(self, universe: int, func: callable):
+        """
+        Register a callback for the given universe and type. You can also use the decorator function 'listen_universe'
+        for the same result. The callbacks are only called, when the DMX data on the universe has changed.
+        :param universe: the universe on which the callback should be registered
+        :param func: the callback
+        """
+        # add callback to the _callbacks list for the universe
+        try:
+            self._callbacks[universe].append(func)
+        except AttributeError:  # try to append
+            self._callbacks[universe] = list(func)
+
+    def listen_on(self, trigger: str):
+        """
+        This is a simple decorator fore registering a callback for an event. You can also use 'register_listener'
+        :param trigger: Currently supported options: 'timeout'
+        """
+        def decorator(f):
+            self.register_listener(trigger=trigger, func=f)
+            return f
+        return decorator
+
+    def register_listener(self, trigger: str, func: callable):
+        """
+        Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
+        To get a list with all valid triggers, use 'from receiver import LISTEN_ON_OPTIONS'.
+        :param trigger: the trigger on which the given callback should be used
+        :param func: the callback. The parameters depend on the trigger. See README for more information
+        """
+        if trigger in LISTEN_ON_OPTIONS:
+            try:
+                self._callbacks[trigger].append(func)
+            except:
+                self._callbacks[trigger] = list(func)
+        else:
+            raise TypeError(f'The given trigger "{trigger}" is not a valid one!')
+
 
     def join_multicast(self, universe: int):
         """
@@ -85,6 +124,14 @@ class sACNreceiver:
         except:  # try to stop the thread
             pass
 
+    def get_possible_universes(self):
+        """
+        Get all universes that are possible because a data packet was received. Timeouted data is removed from the list,
+        so the list may change over time. Depending on sources that are shutting down their streams.
+        :return: a tuple with all universes that were received so far and hadn't a timeout
+        """
+        return tuple(self._thread.lastDataTimestamps.keys())
+
     def __del__(self):
         # stop a potential running thread
         self.stop()
@@ -101,15 +148,31 @@ class _receiverThread(threading.Thread):
         self.enabled_flag = True
         self.sock = sock
         self.callbacks = callbacks
-        self._previousData = {}
+        # previousData for storing the last data that was send in a universe to check if the data has changed
+        self.previousData = {}
+        # priorities are stored here. This is for checking if the incoming data has the best priority.
+        self.priorities = {}
+        # store the last timestamp when something on an universe arrived for checking for timeouts
+        self.lastDataTimestamps = {}
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
         self.sock.settimeout(0.1)  # timeout as 100ms
         self.enabled_flag = True
         while self.enabled_flag:
+            # before receiving: check for timeouts
+            for key, value in self.lastDataTimestamps.items():
+                if check_timeout(value):
+                    for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
+                        try:
+                            callback(key)
+                        except:
+                            pass
+                        del self.lastDataTimestamps[key]
+                        continue  # if the dict changes size during iteration we have to start from the beginning
+
             try:
-                raw_data = list(self.sock.recv(1024))
+                raw_data, ip_sender = list(self.sock.recvfrom(1024))
             except socket.timeout:
                 continue  # if a timeout happens just go through while from the beginning
             try:
@@ -117,13 +180,33 @@ class _receiverThread(threading.Thread):
             except:  # try to make a DataPacket. If it fails just go over it
                 continue
 
+            # refresh the last timestamp on a universe
+            self.lastDataTimestamps[tmp_packet.universe] = current_time_millis()
+
+            # check the priority and refresh the priorities dict
+            # first: check if the stored priority has timeouted and make the current packets priority the new one
+            if self.priorities[tmp_packet.universe] is None or \
+               check_timeout(self.priorities[tmp_packet.universe][1]) or \
+               self.priorities[tmp_packet.universe][0] <= tmp_packet.priority:  # if the send priority is higher than
+                # the stored one, than make the priority the new one
+                self.priorities[tmp_packet.universe] = (tmp_packet.priority, current_time_millis())
+
             # call the listeners for the universe but before check if the data has changed
             # check if there are listeners for the universe before proceeding
-            if tmp_packet.universe not in self.callbacks.keys():
+            # check if the tmp_packet 's priority is high enough to get processed
+            if tmp_packet.universe not in self.callbacks.keys() or \
+               tmp_packet.priority < self.priorities[tmp_packet.universe][0]:
                 continue
-            if self._previousData[tmp_packet.universe] is None or \
-               self._previousData[tmp_packet.universe] != tmp_packet.dmxData:
+            if self.previousData[tmp_packet.universe] is None or \
+               self.previousData[tmp_packet.universe] != tmp_packet.dmxData:
                 # set previous data and inherit callbacks
-                self._previousData[tmp_packet.universe] = tmp_packet.dmxData
+                self.previousData[tmp_packet.universe] = tmp_packet.dmxData
                 for callback in self.callbacks[tmp_packet.universe]:
                     callback(tmp_packet)
+
+
+def current_time_millis():
+    return int(round(time.time() * 1000))
+
+def check_timeout(time):
+    return math.abs(current_time_millis() - time) > E131_NETWORK_DATA_LOSS_TIMEOUT_ms
