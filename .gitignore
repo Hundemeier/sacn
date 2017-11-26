@@ -1,5 +1,4 @@
 sacn.egg-info/
-.idea
-sacn.egg-info
-__pycache__
-.ropeproject
+.*
+!/.gitignore
+__pycache__/
