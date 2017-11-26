@@ -180,15 +180,25 @@ class _receiverThread(threading.Thread):
             except:  # try to make a DataPacket. If it fails just go over it
                 continue
 
-            # refresh the last timestamp on a universe
-            self.lastDataTimestamps[tmp_packet.universe] = current_time_millis()
+            # refresh the last timestamp on a universe, but check if its the last message of a stream
+            # (the stream is terminated by the Stream termination bit)
+            if tmp_packet.option_StreamTerminated:
+                self.lastDataTimestamps.pop(tmp_packet.universe, None)
+                # fire callback
+                for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
+                    try:
+                        callback(tmp_packet.universe)
+                    except:
+                        pass
+            else:
+                self.lastDataTimestamps[tmp_packet.universe] = current_time_millis()
 
             # check the priority and refresh the priorities dict
             # first: check if the stored priority has timeouted and make the current packets priority the new one
             if self.priorities[tmp_packet.universe] is None or \
                check_timeout(self.priorities[tmp_packet.universe][1]) or \
-               self.priorities[tmp_packet.universe][0] <= tmp_packet.priority:  # if the send priority is higher than
-                # the stored one, than make the priority the new one
+               self.priorities[tmp_packet.universe][0] <= tmp_packet.priority:  # if the send priority is higher or
+                # equal than the stored one, than make the priority the new one
                 self.priorities[tmp_packet.universe] = (tmp_packet.priority, current_time_millis())
 
             # call the listeners for the universe but before check if the data has changed
