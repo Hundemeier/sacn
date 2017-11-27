@@ -33,7 +33,7 @@ To use the sending functionality you have to use the `sender.sACNsender`.
 import sacn
 import time
 
-sender = sacn.sender.sACNsender()  # provide an IP-Address to bind to if you are using Windows and want to use multicast
+sender = sacn.sACNsender()  # provide an IP-Address to bind to if you are using Windows and want to use multicast
 sender.start()  # start the sending thread
 sender.activate_output(1)  # start sending out data in the 1st universe
 sender[1].multicast = True  # set multicast to True
@@ -82,7 +82,7 @@ import sacn
 import time
 
 # provide an IP-Address to bind to if you are using Windows and want to use multicast
-receiver = sacn.receiver.sACNreceiver()
+receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
 
 # define a callback function
