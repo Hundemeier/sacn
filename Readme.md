@@ -10,6 +10,14 @@ Currently missing features:
  * discovery messages (receiving and sending)
  * correct stream termination with stream_termination bit (although most devices are
   not supporting this on the receiver site)
+## Setup
+To install the package use pip3. Go to the folder where your setup.py is located and execute
+
+`pip install . `
+
+to install the Libary. Now you can import it with "import sacn".
+
+For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
 
 ## The Internals
 ### Sending
