@@ -1,11 +1,10 @@
 
 import threading
 import time
+import socket
 
 from ..messages.data_packet import DataPacket
-#  from ..receiver import E131_NETWORK_DATA_LOSS_TIMEOUT_ms, LISTEN_ON_OPTIONS
-# for some reason, the above line does not function
-from ..receiver import *
+from ..receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
 
 
 class receiverThread(threading.Thread):
@@ -53,7 +52,7 @@ class receiverThread(threading.Thread):
             if check_timeout(value):
                 for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
                     try:
-                        callback(key)
+                        callback(universe=key, changed='timeout')
                     except:
                         pass
                 del self.lastDataTimestamps[key]
@@ -67,10 +66,17 @@ class receiverThread(threading.Thread):
             # fire callback
             for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
                 try:
-                    callback(packet.universe)
+                    callback(universe=packet.universe, changed='timeout')
                 except:
                     pass
         else:
+            # check if we add or refresh the data in lastDataTimestamps
+            if packet.universe not in self.lastDataTimestamps.keys():
+                for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
+                    try:  # fire callbacks if this is the first received packet for this universe
+                        callback(universe=packet.universe, changed='available')
+                    except:
+                        pass
             self.lastDataTimestamps[packet.universe] = current_time_millis()
 
     def check_and_refresh_priorities(self, packet: DataPacket):

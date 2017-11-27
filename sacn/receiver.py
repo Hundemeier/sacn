@@ -2,11 +2,13 @@
 
 import socket
 
+E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
+LISTEN_ON_OPTIONS = ("availability", "universe")
+# this has to be up here, because otherwise we have a circular import that can not import those two
+
 from .receiving.receiver_thread import receiverThread
 from .messages.data_packet import calculate_multicast_addr
 
-E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
-LISTEN_ON_OPTIONS = ("timeout", "universe")
 
 class sACNreceiver:
     def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568):
@@ -31,8 +33,9 @@ class sACNreceiver:
 
     def listen_on(self, trigger: str, **kwargs):
         """
-        This is a simple decorator for registering a callback for an event. You can also use 'register_listener'
-        :param trigger: Currently supported options: 'timeout', 'universe'
+        This is a simple decorator for registering a callback for an event. You can also use 'register_listener'.
+        A list with all possible options is available via LISTEN_ON_OPTIONS.
+        :param trigger: Currently supported options: 'universe availability change', 'universe'
         """
         def decorator(f):
             self.register_listener(trigger, f, **kwargs)
@@ -42,9 +45,9 @@ class sACNreceiver:
     def register_listener(self, trigger: str, func: callable, **kwargs):
         """
         Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
-        To get a list with all valid triggers, use 'from receiver import LISTEN_ON_OPTIONS'.
+        To get a list with all valid triggers, use LISTEN_ON_OPTIONS.
         :param trigger: the trigger on which the given callback should be used. 
-        Currently supported: 'timeout', 'universe'
+        Currently supported: 'universe availability change', 'universe'
         :param func: the callback. The parameters depend on the trigger. See README for more information
         """
         if trigger in LISTEN_ON_OPTIONS:

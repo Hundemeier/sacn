@@ -113,12 +113,17 @@ Functions:
  * `leave_multicast(<universe>)`: leave the multicast group specified by the universe.
  * `get_possible_universes()`: Returns a tuple with all universes that have sources that are sending out data and this 
  data is received by this machine
- * `register_listener(<trigger>, <callback>)`: register a listener for the given trigger. You can also use the decorator
- `listen_on(<trigger>, **kwargs)`. Possible trigger so far:
-   * `timeout`: gets called when a universe has no source anymore that sends data to this universe or the data is not 
-   received by this machine. This gets also fired if a source terminates a stream via the stream_termination bit.
+ * `register_listener(<trigger>, <callback>, **kwargs)`: register a listener for the given trigger.
+ You can also use the decorator `listen_on(<trigger>, **kwargs)`. Possible trigger so far:
+   * `availability`: gets called when there is no data for a universe anymore or there is now data 
+   available. This gets also fired if a source terminates a stream via the stream_termination bit.  
+   The callback should get two arguments: `universe` and `changed`  
+     * `universe: int`: is the universe where the action happened
+     * `changed: str`: can be 'timeout' or 'available'
    * `universe`: registers a listener for the given universe. The callback gets only one parameter, the DataPacket. 
-   You can also use the decorator `@listen_on('universe', universe=<universe>)`
+   You can also use the decorator `@listen_on('universe', universe=<universe>)`.  
+   The callback should have one argument: `packet`
+     * `packet: DataPacket`: the received DataPacket with all information
 
 ### DataPacket
 This is an abstract representation of an sACN Data packet that carries the DMX data. This class is used internally by
