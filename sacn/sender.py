@@ -8,15 +8,15 @@ http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 import random
 
 from .messages.data_packet import DataPacket
-from .output.output import Output
-from .output.output_thread import OutputThread, DEFAULT_PORT
+from .sending.output import Output
+from .sending.output_thread import OutputThread, DEFAULT_PORT
 
 
 class sACNsender:
     def __init__(self, bind_address: str = "0.0.0.0", bind_port: int = DEFAULT_PORT, source_name: str = "default source name",
                  cid: tuple = (), fps: int = 30):
         """
-        Creates a sender object. A sender is used to manage multiple sACN universes and handles their output.
+        Creates a sender object. A sender is used to manage multiple sACN universes and handles their sending.
         DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
         setting defines how often packets are send out to prevent network overuse. So if you change the DMX values too
         often in a second they may not all been send. Vary the fps parameter to your needs (Default=30).
@@ -41,7 +41,7 @@ class sACNsender:
 
     def activate_output(self, universe: int):
         """
-        Activates a universe that's then starting to output every second.
+        Activates a universe that's then starting to sending every second.
         See http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf for more information
         :param universe: the universe to activate
         """
@@ -49,13 +49,13 @@ class sACNsender:
         # check, if the universe already exists in the list:
         if universe in self._outputs:
             return
-        # add new output:
+        # add new sending:
         new_output = Output(DataPacket(cid=self.__CID, sourceName=self.source_name, universe=universe))
         self._outputs[universe] = new_output
 
     def deactivate_output(self, universe: int):
         """
-        Deactivates an existing output. Every data from the existing output will be lost. (TTL, Multicast, DMX data, ..)
+        Deactivates an existing sending. Every data from the existing sending will be lost. (TTL, Multicast, DMX data, ..)
         :param universe: the universe to deactivate
         """
         check_universe(universe)
@@ -73,18 +73,18 @@ class sACNsender:
 
     def move_universe(self, universe_from: int, universe_to: int):
         """
-        Moves an output from one universe to another. All settings are being restored and only the universe changes
+        Moves an sending from one universe to another. All settings are being restored and only the universe changes
         :param universe_from: the universe that should be moved
         :param universe_to: the target universe. An existing universe will be overwritten
         """
         check_universe(universe_from)
         check_universe(universe_to)
-        # store the output object and change the universe in the packet of the output
+        # store the sending object and change the universe in the packet of the sending
         tmp_output = self._outputs[universe_from]
         tmp_output._packet.universe = universe_to
-        # deactivate output
+        # deactivate sending
         self.deactivate_output(universe_from)
-        # activate new output with the new universe
+        # activate new sending with the new universe
         self._outputs[universe_to] = tmp_output
 
     def __getitem__(self, item: int) -> Output:

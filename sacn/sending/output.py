@@ -5,7 +5,7 @@ from ..messages.data_packet import DataPacket
 
 class Output:
     """
-    This class is a compact representation of an output with all relevant information
+    This class is a compact representation of an sending with all relevant information
     """
     def __init__(self, packet: DataPacket, last_time_send: int = 0, destination: str = "127.0.0.1",
                  multicast: bool = False, ttl: int = 8):

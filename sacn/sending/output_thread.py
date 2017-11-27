@@ -11,7 +11,7 @@ SEND_OUT_INTERVAL_ms = 1000
 
 class OutputThread(threading.Thread):
     def __init__(self, outputs, bind_address, bind_port: int = DEFAULT_PORT, fps: int = 30):
-        super().__init__(name='sACN output/sender thread')
+        super().__init__(name='sACN sending/sender thread')
         self._outputs = outputs
         self._bindAddress = bind_address
         self.enabled_flag: bool = True
@@ -47,7 +47,7 @@ def send_out(udp_sock: socket.socket, port: int, output: Output):
         UDP_IP = output._packet.calculate_multicast_addr()
         # make socket multicast-aware: (set TTL) for some reason that does not work here,
         # so its in the run method from above
-        # socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, output.ttl)
+        # socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, sending.ttl)
 
     MESSAGE = bytearray(output._packet.getBytes())
     udp_sock.sendto(MESSAGE, (UDP_IP, port))
