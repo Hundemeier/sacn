@@ -13,7 +13,7 @@ Currently missing features:
 ## Setup
 To install the package use pip3. Go to the folder where your setup.py is located and execute
 
-```pip install . ```
+`pip install . `
 
 to install the Libary. Now you can import it with "import sacn".
 
