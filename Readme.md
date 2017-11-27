@@ -86,7 +86,7 @@ receiver = sacn.receiver.sACNreceiver()
 receiver.start()  # start the receiving thread
 
 # define a callback function
-@receiver.listen_universe(1)
+@receiver.listen_on('universe', universe=1)  # listens on universe 1
 def callback(packet):  # packet type: sacn.messages.data_packet.DataPacket
     print(packet.dmxData)  # print the received DMX data
 
@@ -104,18 +104,21 @@ The `sACNreceiver` can be initalized with the following parameters:
  * `bind_port: int`: Default: 5568. It is not recommended to change this value!
  Only use when you are know what you are doing!
 
+Please keep in mind to not use the callbacks for time consuming tasks! 
+If you do this, then the receiver can not react fast enough on incoming messages!
+
 Functions:
  * `join_multicast(<universe>)`: joins the multicast group for the specific universe. If you are on Windows you have to
  bind the receiver to a valid IP-Address. That is done in the constructor of a sACNreceiver.
  * `leave_multicast(<universe>)`: leave the multicast group specified by the universe.
  * `get_possible_universes()`: Returns a tuple with all universes that have sources that are sending out data and this 
  data is received by this machine
- * `register_universe_callback(<universe>, <callback>)`: registers a listener for the given universe. The callback gets 
- only one parameter, the DataPacket. You can also use the decorator `@listen_universe(<universe>)`.
  * `register_listener(<trigger>, <callback>)`: register a listener for the given trigger. You can also use the decorator
- `listen_on(<trigger>)`. Possible trigger so far:
+ `listen_on(<trigger>, **kwargs)`. Possible trigger so far:
    * `timeout`: gets called when a universe has no source anymore that sends data to this universe or the data is not 
    received by this machine. This gets also fired if a source terminates a stream via the stream_termination bit.
+   * `universe`: registers a listener for the given universe. The callback gets only one parameter, the DataPacket. 
+   You can also use the decorator `@listen_on('universe', universe=<universe>)`
 
 ### DataPacket
 This is an abstract representation of an sACN Data packet that carries the DMX data. This class is used internally by

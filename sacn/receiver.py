@@ -7,7 +7,7 @@ import time
 from .messages.data_packet import DataPacket, calculate_multicast_addr
 
 E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
-LISTEN_ON_OPTIONS = ("timeout", "test")
+LISTEN_ON_OPTIONS = ("timeout", "universe")
 
 class sACNreceiver:
     def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568):
@@ -30,55 +30,36 @@ class sACNreceiver:
             pass
         self.sock.bind((bind_address, bind_port))
 
-    def listen_universe(self, universe: int):
-        """
-        This is a decorator for callbacks that should react on the given universe.
-        The callbacks are getting inherited if the dmx data was changed
-        :param universe: the universe to listen on
-        """
-        def decorator(f: callable):
-            self.register_universe_callback(universe=universe, func=f)
-            return f
-        return decorator
-
-    def register_universe_callback(self, universe: int, func: callable):
-        """
-        Register a callback for the given universe and type. You can also use the decorator function 'listen_universe'
-        for the same result. The callbacks are only called, when the DMX data on the universe has changed.
-        :param universe: the universe on which the callback should be registered
-        :param func: the callback
-        """
-        # add callback to the _callbacks list for the universe
-        try:
-            self._callbacks[universe].append(func)
-        except:  # try to append
-            self._callbacks[universe] = [func]
-
-    def listen_on(self, trigger: str):
+    def listen_on(self, trigger: str, **kwargs):
         """
         This is a simple decorator for registering a callback for an event. You can also use 'register_listener'
-        :param trigger: Currently supported options: 'timeout'
+        :param trigger: Currently supported options: 'timeout', 'universe'
         """
         def decorator(f):
-            self.register_listener(trigger=trigger, func=f)
+            self.register_listener(trigger, f, **kwargs)
             return f
         return decorator
 
-    def register_listener(self, trigger: str, func: callable):
+    def register_listener(self, trigger: str, func: callable, **kwargs):
         """
         Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
         To get a list with all valid triggers, use 'from receiver import LISTEN_ON_OPTIONS'.
-        :param trigger: the trigger on which the given callback should be used
+        :param trigger: the trigger on which the given callback should be used. 
+        Currently supported: 'timeout', 'universe'
         :param func: the callback. The parameters depend on the trigger. See README for more information
         """
         if trigger in LISTEN_ON_OPTIONS:
+            if trigger == LISTEN_ON_OPTIONS[1]:  # if the trigger is universe, use the universe from args as key
+                try:
+                    self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]].append(func)
+                except:
+                    self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]] = [func]
             try:
                 self._callbacks[trigger].append(func)
             except:
                 self._callbacks[trigger] = [func]
         else:
             raise TypeError(f'The given trigger "{trigger}" is not a valid one!')
-
 
     def join_multicast(self, universe: int):
         """
@@ -160,15 +141,15 @@ class _receiverThread(threading.Thread):
         self.enabled_flag = True
         while self.enabled_flag:
             # before receiving: check for timeouts
-            for key, value in self.lastDataTimestamps.items():
+            for key, value in list(self.lastDataTimestamps.items()):
                 if check_timeout(value):
                     for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
                         try:
                             callback(key)
                         except:
                             pass
-                        del self.lastDataTimestamps[key]
-                        continue  # ToDo: make the loop safe for deleting items from the dict
+                    del self.lastDataTimestamps[key]
+                    continue  # ToDo: make the loop safe for deleting items from the dict
 
             try:
                 raw_data, ip_sender = list(self.sock.recvfrom(1024))
