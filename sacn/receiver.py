@@ -91,7 +91,7 @@ class sACNreceiver:
         Starts a new thread that handles the input. If a thread is already running, the thread will be restarted.
         """
         self.stop()  # stop an existing thread
-        self._thread = receiverThread(sock=self.sock, callbacks=self._callbacks)
+        self._thread = receiverThread(socket=self.sock, callbacks=self._callbacks)
         self._thread.start()
 
     def stop(self):

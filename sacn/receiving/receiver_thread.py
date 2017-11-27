@@ -1,13 +1,15 @@
 
 import threading
 import time
-import socket
 
 from ..messages.data_packet import DataPacket
-from ..receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
+#  from ..receiver import E131_NETWORK_DATA_LOSS_TIMEOUT_ms, LISTEN_ON_OPTIONS
+# for some reason, the above line does not function
+from ..receiver import *
+
 
 class receiverThread(threading.Thread):
-    def __init__(self, sock: socket.socket, callbacks: dict):
+    def __init__(self, socket, callbacks: dict):
         """
         This is a private class and should not be used elsewhere. It handles the while loop running in the thread.
         :param socket: the socket to use to listen. It will not be initalized and only the socket.recv function is used.
@@ -15,7 +17,7 @@ class receiverThread(threading.Thread):
         :param callbacks: the list with all callbacks
         """
         self.enabled_flag = True
-        self.sock = sock
+        self.socket = socket
         self.callbacks = callbacks
         # previousData for storing the last data that was send in a universe to check if the data has changed
         self.previousData = {}
@@ -26,14 +28,14 @@ class receiverThread(threading.Thread):
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
-        self.sock.settimeout(0.1)  # timeout as 100ms
+        self.socket.settimeout(0.1)  # timeout as 100ms
         self.enabled_flag = True
         while self.enabled_flag:
             # before receiving: check for timeouts
             self.check_for_timeouts()
             # receive the data
             try:
-                raw_data, ip_sender = list(self.sock.recvfrom(1024))
+                raw_data, ip_sender = list(self.socket.recvfrom(1024))
             except socket.timeout:
                 continue  # if a timeout happens just go through while from the beginning
             try:
