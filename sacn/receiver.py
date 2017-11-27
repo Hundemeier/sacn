@@ -3,12 +3,11 @@
 import socket
 import threading
 import time
-import math
 
 from .messages.data_packet import DataPacket, calculate_multicast_addr
 
 E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
-LISTEN_ON_OPTIONS = ("timeout")
+LISTEN_ON_OPTIONS = ("timeout", "test")
 
 class sACNreceiver:
     def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568):
@@ -52,12 +51,12 @@ class sACNreceiver:
         # add callback to the _callbacks list for the universe
         try:
             self._callbacks[universe].append(func)
-        except AttributeError:  # try to append
-            self._callbacks[universe] = list(func)
+        except:  # try to append
+            self._callbacks[universe] = [func]
 
     def listen_on(self, trigger: str):
         """
-        This is a simple decorator fore registering a callback for an event. You can also use 'register_listener'
+        This is a simple decorator for registering a callback for an event. You can also use 'register_listener'
         :param trigger: Currently supported options: 'timeout'
         """
         def decorator(f):
@@ -76,7 +75,7 @@ class sACNreceiver:
             try:
                 self._callbacks[trigger].append(func)
             except:
-                self._callbacks[trigger] = list(func)
+                self._callbacks[trigger] = [func]
         else:
             raise TypeError(f'The given trigger "{trigger}" is not a valid one!')
 
@@ -169,7 +168,7 @@ class _receiverThread(threading.Thread):
                         except:
                             pass
                         del self.lastDataTimestamps[key]
-                        continue  # if the dict changes size during iteration we have to start from the beginning
+                        continue  # ToDo: make the loop safe for deleting items from the dict
 
             try:
                 raw_data, ip_sender = list(self.sock.recvfrom(1024))
@@ -195,7 +194,8 @@ class _receiverThread(threading.Thread):
 
             # check the priority and refresh the priorities dict
             # first: check if the stored priority has timeouted and make the current packets priority the new one
-            if self.priorities[tmp_packet.universe] is None or \
+            if tmp_packet.universe not in self.priorities.keys() or \
+               self.priorities[tmp_packet.universe] is None or \
                check_timeout(self.priorities[tmp_packet.universe][1]) or \
                self.priorities[tmp_packet.universe][0] <= tmp_packet.priority:  # if the send priority is higher or
                 # equal than the stored one, than make the priority the new one
@@ -207,7 +207,8 @@ class _receiverThread(threading.Thread):
             if tmp_packet.universe not in self.callbacks.keys() or \
                tmp_packet.priority < self.priorities[tmp_packet.universe][0]:
                 continue
-            if self.previousData[tmp_packet.universe] is None or \
+            if tmp_packet.universe not in self.previousData.keys() or \
+               self.previousData[tmp_packet.universe] is None or \
                self.previousData[tmp_packet.universe] != tmp_packet.dmxData:
                 # set previous data and inherit callbacks
                 self.previousData[tmp_packet.universe] = tmp_packet.dmxData
@@ -219,4 +220,4 @@ def current_time_millis():
     return int(round(time.time() * 1000))
 
 def check_timeout(time):
-    return math.abs(current_time_millis() - time) > E131_NETWORK_DATA_LOSS_TIMEOUT_ms
+    return abs(current_time_millis() - time) > E131_NETWORK_DATA_LOSS_TIMEOUT_ms

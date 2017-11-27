@@ -8,9 +8,8 @@ For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_
 
 Currently missing features:
  * discovery messages (receiving and sending)
- * correct stream termination with stream_termination bit (although the most devices are
+ * correct stream termination with stream_termination bit (although most devices are
   not supporting this on the receiver site)
- * more advanced receiving methods (you only get the raw DataPacket without filtering after priority or other factors)
 
 ## The Internals
 ### Sending
