@@ -1,8 +1,6 @@
 # sACN / E1.31 module
 **BETA!** And therefore currently not in the pypi!
 
-Python 3.6 or newer required!
-
 This module is a simple sACN library that support the standard DMX message of the protocol.
 It is based on the [2016][e1.31] version of the official ANSI E1.31 standard.
 It has support for sending out DMX data and receiving it. Multiple and multicast universes are supported.
@@ -10,6 +8,14 @@ For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_
 
 Currently missing features:
  * discovery messages (receiving and sending)
+
+## Setup
+To install the package use pip. Go to the folder where your setup.py is located and execute `pip install . ` to 
+install the Libary. Now you can import it with `import sacn`.
+
+Python 3.6 or newer required!
+
+For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
 
 ## The Internals
 ### Sending
@@ -142,7 +148,6 @@ The DataPacket provides following attributes:
  * `option_PreviewData: bool`: True if this data is for visualization purposes.
  * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
  Filled with 0 for empty spaces.
-
 
 
 [e1.31]: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
