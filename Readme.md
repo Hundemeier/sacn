@@ -1,6 +1,8 @@
 # sACN / E1.31 module
 **BETA!** And therefore currently not in the pypi!
 
+Python 3.6 or newer required!
+
 This module is a simple sACN library that support the standard DMX message of the protocol.
 It is based on the [2016][e1.31] version of the official ANSI E1.31 standard.
 It has support for sending out DMX data and receiving it. Multiple and multicast universes are supported.
@@ -8,17 +10,16 @@ For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_
 
 Currently missing features:
  * discovery messages (receiving and sending)
- * correct stream termination with stream_termination bit (although most devices are
-  not supporting this on the receiver site)
 
 ## The Internals
 ### Sending
 You can create a new `sACNsender` object and provide the necessary information. Then you have to use `start()`.
-This creates a new thread that is responsible for sending out the data. If the data is not changed, the same DMX data
-is send out every second.
+This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when 
+finished!. If the data is not changed, the same DMX data is send out every second.
 
 The thread sends out the data every *1/fps* seconds. This provides synchronization (the data for all universes is send
 out the same time) and reduces network traffic even if you give the sender new data more often than the *fps*.
+A simple description would be to say that the data that you give the sACNsender is subsampled by the *fps*.
 You can tweak this *fps* by simply change it when creating the `sACNsender` object.
 ### Receiving
 A very simple solution, as you just create a `sACNreceiver` object and use `start()` a new thread that is running in
@@ -46,7 +47,9 @@ sender.stop()  # do not forget to stop the sender
 ```
 
 You can activate an output universe via `activate_output(<universe>)` and then change the attributes of this universe
-via `sender[<universe>].<attribute>`. To deactivate an output use `deactivate_output(<universe>)`.
+via `sender[<universe>].<attribute>`. To deactivate an output use `deactivate_output(<universe>)`. The output is 
+terminated like the [E1.31][e1.31] describes it on page 14.
+
 Tip: you can get the activated outputs with `get_active_outputs()` and you can move an output with all its settings
 from one universe to another with `move_universe(<from>, <to>)`.
 
@@ -61,7 +64,7 @@ Available Attributes are:
  * `dmx_data: tuple`: the DMX data as a tuple. Max length is 512 and for legacy devices all data that is smaller than
  512 is merged to a 512 length tuple with 0 as filler value. The values in the tuple have to be [0-255]!
 
-`sender.sACNsender` Creates a sender object. A sender is used to manage multiple sACN universes and handles their output.
+`sACNsender` Creates a sender object. A sender is used to manage multiple sACN universes and handles their output.
 DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
 setting defines how often packets are send out to prevent network overuse. So if you change the DMX values too
 often in a second they may not all been send. Vary the fps parameter to your needs (Default=30).
