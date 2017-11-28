@@ -46,7 +46,7 @@ sender.start()  # start the sending thread
 sender.activate_output(1)  # start sending out data in the 1st universe
 sender[1].multicast = True  # set multicast to True
 # sender[1].destination = "192.168.1.20"  # or provide unicast information.
-# Keep in mind that if multicast is on, this is just not used
+# Keep in mind that if multicast is on, unicast is not used
 sender[1].dmx_data = (1, 2, 3, 4)  # some test DMX data
 
 time.sleep(10)  # send the data for 10 seconds
@@ -99,7 +99,7 @@ receiver.start()  # start the receiving thread
 
 # define a callback function
 @receiver.listen_on('universe', universe=1)  # listens on universe 1
-def callback(packet):  # packet type: sacn.messages.data_packet.DataPacket
+def callback(packet):  # packet type: sacn.DataPacket
     print(packet.dmxData)  # print the received DMX data
 
 # optional: if you want to use multicast use this function with the universe as parameter
