@@ -7,7 +7,8 @@ It has support for sending out DMX data and receiving it. Multiple and multicast
 For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_Architecture).
 
 Currently missing features:
- * discovery messages (receiving and sending)
+ * discovery messages (receiving)
+ * custom ports (because this is not recommended)
 
 ## Setup
 To install the package use pip. Go to the folder where your setup.py is located and execute `pip install . ` to 
@@ -59,7 +60,7 @@ terminated like the [E1.31][e1.31] describes it on page 14.
 Tip: you can get the activated outputs with `get_active_outputs()` and you can move an output with all its settings
 from one universe to another with `move_universe(<from>, <to>)`.
 
-Available Attributes are:
+Available Attributes for `sender[<universe>].<attribute>` are:
  * `destination: str`: the unicast destination as string. (eg "192.168.1.150") Default: "127.0.0.1"
  * `multicast: bool`: set whether to send out via multicast or not. Default: False
  If True the data is send out via multicast and not unicast.
@@ -76,12 +77,14 @@ setting defines how often packets are send out to prevent network overuse. So if
 often in a second they may not all been send. Vary the fps parameter to your needs (Default=30).
 Note that a bind address is needed on Windows for sending out multicast packets.
  * `bind_address: str`: the IP-Address to bind to.
- For multicast on a Windows machine this must be set to a proper value otherwise omit.
+ For multicast and universe discovery on a Windows machine this must be set to a proper value otherwise omit.
  * `bind_port: int`: optionally bind to a specific port. Default=5568. It is not recommended to change the port.
  Change the port number if you have trouble with another program or the sACNreceiver blocking the port
  * `source_name: str`: the source name used in the sACN packets. See the [standard][e1.31] for more information.
  * `cid: tuple`: the cid. If not given, a random CID will be generated. See the [standard][e1.31] for more information.
- * `fps: int` the frames per second. See explanation above. Has to be >0.
+ * `fps: int` the frames per second. See explanation above. Has to be >0. Default: 30
+ * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this 
+ feature to function properly on Windows, you have to provide a bind address. Default: True
 
 ### Receiving
 To use the receiving functionality you have to use the `receiver.sACNreceiver`.

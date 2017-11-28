@@ -15,7 +15,8 @@ from .sending.output_thread import OutputThread, DEFAULT_PORT
 
 class sACNsender:
     def __init__(self, bind_address: str = "0.0.0.0", bind_port: int = DEFAULT_PORT,
-                 source_name: str = "default source name", cid: tuple = (), fps: int = 30):
+                 source_name: str = "default source name", cid: tuple = (),
+                 fps: int = 30, universeDiscovery: bool = True):
         """
         Creates a sender object. A sender is used to manage multiple sACN universes and handles their sending.
         DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
@@ -39,6 +40,18 @@ class sACNsender:
         self.bindAddress = bind_address
         self.bind_port = bind_port
         self._output_thread: OutputThread = None
+        self._universeDiscovery: bool = universeDiscovery
+
+    @property
+    def universeDiscovery(self):
+        return self._universeDiscovery
+    @universeDiscovery.setter
+    def universeDiscovery(self, universeDiscovery: bool):
+        self._universeDiscovery = universeDiscovery
+        try:  # try to set the value for the output thread
+            self._output_thread.universeDiscovery = universeDiscovery
+        except:
+            pass
 
     def activate_output(self, universe: int):
         """
@@ -117,8 +130,9 @@ class sACNsender:
         if bind_port is None:
             bind_port = self.bind_port
         self.stop()
-        self._output_thread = OutputThread(outputs=self._outputs, bind_address=bind_address,
-                                           bind_port=bind_port, fps=fps)
+        self._output_thread = OutputThread(cid=self.__CID, source_name=self.source_name,
+                                           outputs=self._outputs, bind_address=bind_address,
+                                           bind_port=bind_port, fps=fps, universe_discovery=self._universeDiscovery)
         self._output_thread.start()
 
     def stop(self):

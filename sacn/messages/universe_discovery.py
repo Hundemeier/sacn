@@ -63,9 +63,9 @@ class UniverseDiscoveryPacket(RootLayer):
         # Vector UDL:----------------------------------------
         rtrnList.extend(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST)
         # page:----------------------------------------------
-        rtrnList.append(self._page)
+        rtrnList.append(self._page & 0xFF)
         # last page:-----------------------------------------
-        rtrnList.append(self._lastPage)
+        rtrnList.append(self._lastPage & 0xFF)
         # universes:-----------------------------------------
         for universe in self._universes:  # universe is a 16-bit number!
             rtrnList.extend(int_to_bytes(universe))
@@ -95,6 +95,35 @@ class UniverseDiscoveryPacket(RootLayer):
         tmp_packet._page = raw_data[118]
         tmp_packet._lastPage = raw_data[119]
         return tmp_packet
+
+    @staticmethod
+    def make_multiple_uni_disc_packets(cid: tuple, sourceName: str, universes: list) -> list:
+        """
+        Creates a list with universe discovery packets based on the given data. It creates automatically enough packets
+        for the given universes list.
+        :param cid: the cid to use in all packets
+        :param sourceName: the source name to use in all packets
+        :param universes: the universes. Can be longer than 512, but has to be shorter than 256*512.
+        The values in the list should be [1-63999]
+        :return: a list full of universe discovery packets
+        """
+        tmpList = []
+        if len(universes)%512 != 0:
+            num_of_packets = int(len(universes)/512)+1
+        else:  # just get how long the list has to be. Just read and think about the if statement.
+            # Should be self-explaining
+            num_of_packets = int(len(universes)/512)
+
+        for i in range(0, num_of_packets):
+            if i<num_of_packets-1:
+                tmpUniverses = universes[i*512:i*512+511]
+            else:  # if we are here then the for is in the last loop
+                tmpUniverses = universes[i*512:len(universes)-1]
+
+            # create new UniverseDiscoveryPacket and append it to the list. Page and lastPage are getting special values
+            tmpList.append(UniverseDiscoveryPacket(cid=cid, sourceName=sourceName, universes=tmpUniverses,
+                                                   page=i, lastPage=num_of_packets-1))
+        return tmpList
 
 
 def convert_raw_data_to_universes(raw_data) -> tuple:
