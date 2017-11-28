@@ -4,17 +4,19 @@
 This represents a framing layer and a DMP layer from the E1.31 Standard
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
-from .root_layer import RootLayer
-
-_VECTOR_E131_DATA_PACKET = (0, 0, 0, 0x02)
-_VECTOR_DMP_SET_PROPERTY = 0x02
-_VECTOR_ROOT_E131_DATA = (0, 0, 0, 4)
+from .root_layer import VECTOR_DMP_SET_PROPERTY, \
+    VECTOR_E131_DATA_PACKET, \
+    VECTOR_ROOT_E131_DATA, \
+    RootLayer, \
+    int_to_bytes, \
+    make_flagsandlength
 
 
 class DataPacket(RootLayer):
-    def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100, sequence: int = 0, streamTerminated: bool = False, previewData: bool = False):
-        self._vector1 = _VECTOR_E131_DATA_PACKET
-        self._vector2 = _VECTOR_DMP_SET_PROPERTY
+    def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
+                 sequence: int = 0, streamTerminated: bool = False, previewData: bool = False):
+        self._vector1 = VECTOR_E131_DATA_PACKET
+        self._vector2 = VECTOR_DMP_SET_PROPERTY
         self.sourceName: str = sourceName
         self.priority = priority
         self._syncAddr = (0, 0)  # currently not supported
@@ -23,14 +25,14 @@ class DataPacket(RootLayer):
         self.option_PreviewData: bool = previewData
         self.sequence = sequence
         self.dmxData = dmxData
-        super().__init__(126 + len(dmxData), cid, _VECTOR_ROOT_E131_DATA)
+        super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     @property
     def priority(self) -> int:
         return self._priority
     @priority.setter
     def priority(self, priority: int):
-        if priority not in range(0, 200):
+        if priority not in range(0, 201):
             raise TypeError(f'priority must be in range [0-200]! value was {priority}')
         self._priority = priority
 
@@ -39,7 +41,7 @@ class DataPacket(RootLayer):
         return self._universe
     @universe.setter
     def universe(self, universe: int):
-        if universe not in range(1, 63999):
+        if universe not in range(1, 64000):
             raise TypeError(f'universe must be [1-63999]! value was {universe}')
         self._universe = universe
 
@@ -48,7 +50,7 @@ class DataPacket(RootLayer):
         return self._sequence
     @sequence.setter
     def sequence(self, sequence: int):
-        if sequence not in range(0, 255):
+        if sequence not in range(0, 256):
             raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
     def sequence_increase(self):
@@ -74,8 +76,7 @@ class DataPacket(RootLayer):
     def getBytes(self) -> tuple:
         rtrnList = super().getBytes()
         # Flags and Length Framing Layer:-------
-        length1 = self.length - 38
-        rtrnList.extend([(0x7 << 4) + ((length1 & 0xF00) >> 8), length1 & 0xFF])
+        rtrnList.extend(make_flagsandlength(self.length - 38))
         # Vector Framing Layer:-----------------
         rtrnList.extend(self._vector1)
         # sourceName:---------------------------
@@ -98,24 +99,24 @@ class DataPacket(RootLayer):
         tmpOptionsFlags += int(self.option_PreviewData) << 7
         rtrnList.append(tmpOptionsFlags)
         # universe:-----------------------------
-        rtrnList.extend([self._universe >> 8, self._universe & 0xFF])
+        rtrnList.extend(int_to_bytes(self._universe))
         # DMP Layer:---------------------------------------------------
         # Flags and Length DMP Layer:-----------
-        length2 = self.length - 115
-        rtrnList.extend([(0x7 << 4) + (length2 >> 8), length2 & 0xFF])
+        rtrnList.extend(make_flagsandlength(self.length - 115))
         # Vector DMP Layer:---------------------
         rtrnList.append(self._vector2)
         # Some static values (Address & Data Type, First Property addr, ...)
         rtrnList.extend([0xa1, 0x00, 0x00, 0x00, 0x01])
         # Length of the data:-------------------
         lengthDmxData = len(self._dmxData)+1
-        rtrnList.extend([lengthDmxData >> 8, lengthDmxData & 0xFF])
+        rtrnList.extend(int_to_bytes(lengthDmxData))
         # DMX data:-----------------------------
         rtrnList.append(0x00)  # DMX Start Code
         rtrnList.extend(self._dmxData)
 
         return tuple(rtrnList)
 
+    @staticmethod
     def make_data_packet(raw_data):
         """
         Converts raw byte data to a sACN DataPacket. Note that the raw bytes have to come from a 2016 sACN Message.
@@ -127,9 +128,9 @@ class DataPacket(RootLayer):
         if len(raw_data) < 126:
             raise TypeError('The length of the provided data is not long enough! Min length is 126!')
         # Check if the three Vectors are correct
-        if tuple(raw_data[18:22]) != tuple(_VECTOR_ROOT_E131_DATA) or \
-            tuple(raw_data[40:44]) != tuple(_VECTOR_E131_DATA_PACKET) or \
-            raw_data[117] != _VECTOR_DMP_SET_PROPERTY:  # REMEMBER: when slicing: [inclusive:exclusive]
+        if tuple(raw_data[18:22]) != tuple(VECTOR_ROOT_E131_DATA) or \
+           tuple(raw_data[40:44]) != tuple(VECTOR_E131_DATA_PACKET) or \
+           raw_data[117] != VECTOR_DMP_SET_PROPERTY:  # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
 
         tmpPacket = DataPacket(cid=raw_data[22:38], sourceName=str(raw_data[44:108]),

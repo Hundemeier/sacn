@@ -21,7 +21,7 @@ For more information on pip installation see: https://packaging.python.org/tutor
 ### Sending
 You can create a new `sACNsender` object and provide the necessary information. Then you have to use `start()`.
 This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when 
-finished!. If the data is not changed, the same DMX data is send out every second.
+finished! If the data is not changed, the same DMX data is send out every second.
 
 The thread sends out the data every *1/fps* seconds. This provides synchronization (the data for all universes is send
 out the same time) and reduces network traffic even if you give the sender new data more often than the *fps*.

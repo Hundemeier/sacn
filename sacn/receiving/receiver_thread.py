@@ -34,7 +34,8 @@ class receiverThread(threading.Thread):
             self.check_for_timeouts()
             # receive the data
             try:
-                raw_data, ip_sender = list(self.socket.recvfrom(1024))
+                raw_data, ip_sender = list(self.socket.recvfrom(1144))  # 1144 because the longest possible packet
+                # in the sACN standard is the universe discovery packet with a max length of 1144
             except socket.timeout:
                 continue  # if a timeout happens just go through while from the beginning
             try:
