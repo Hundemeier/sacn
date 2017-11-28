@@ -17,15 +17,16 @@ class OutputThread(threading.Thread):
         self.enabled_flag: bool = True
         self.fps: int = fps
         self._bind_port = bind_port
+        self._socket: socket.socket = None
 
     def run(self):
-        udp_sock = socket.socket(socket.AF_INET,  # Internet
+        self._socket = socket.socket(socket.AF_INET,  # Internet
                                  socket.SOCK_DGRAM)  # UDP
         try:
-            udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         except:  # Not all systems support multiple sockets on the same port and interface
             pass
-        udp_sock.bind((self._bindAddress, DEFAULT_PORT))
+        self._socket.bind((self._bindAddress, self._bind_port))
 
         self.enabled_flag = True
         while self.enabled_flag:
@@ -34,28 +35,28 @@ class OutputThread(threading.Thread):
                 # send out when the 1 second interval is over
                 if abs(current_time_millis() - output._last_time_send) > SEND_OUT_INTERVAL_ms or output._changed:
                     # make socket multicast-aware: (set TTL)
-                    udp_sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, output.ttl)
-                    send_out(udp_sock, self._bind_port, output)
+                    self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, output.ttl)
+                    self.send_out(output)
             time.sleep(1 / self.fps)  # this is just a rough temp solution
-        udp_sock.close()
+        self._socket.close()
 
+    def send_out(self, output: Output):
+        # 1st: Destination (check if multicast)
+        if output.multicast:
+            udp_ip = output._packet.calculate_multicast_addr()
+            # make socket multicast-aware: (set TTL) for some reason that does not work here,
+            # so its in the run method from above
+            # socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, sending.ttl)
+        else:
+            udp_ip = output.destination
 
-def send_out(udp_sock: socket.socket, port: int, output: Output):
-    # 1st: Destination (check if multicast)
-    UDP_IP = output.destination
-    if output.multicast:
-        UDP_IP = output._packet.calculate_multicast_addr()
-        # make socket multicast-aware: (set TTL) for some reason that does not work here,
-        # so its in the run method from above
-        # socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, sending.ttl)
-
-    MESSAGE = bytearray(output._packet.getBytes())
-    udp_sock.sendto(MESSAGE, (UDP_IP, port))
-    output._last_time_send = current_time_millis()
-    # increase the sequence counter
-    output._packet.sequence_increase()
-    # the changed flag is not necessary any more
-    output._changed = False
+        MESSAGE = bytearray(output._packet.getBytes())
+        self._socket.sendto(MESSAGE, (udp_ip, DEFAULT_PORT))
+        output._last_time_send = current_time_millis()
+        # increase the sequence counter
+        output._packet.sequence_increase()
+        # the changed flag is not necessary any more
+        output._changed = False
 
 
 def current_time_millis():

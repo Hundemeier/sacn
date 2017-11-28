@@ -61,7 +61,10 @@ class receiverThread(threading.Thread):
         # refresh the last timestamp on a universe, but check if its the last message of a stream
         # (the stream is terminated by the Stream termination bit)
         if packet.option_StreamTerminated:
-            del self.lastDataTimestamps[packet.universe]  # delete the timestamp so that the callback is
+            try:
+                del self.lastDataTimestamps[packet.universe]  # delete the timestamp so that the callback is
+            except:
+                pass
             # not fired twice or more
             # fire callback
             for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:

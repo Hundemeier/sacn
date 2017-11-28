@@ -6,6 +6,7 @@ http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
 
 import random
+from typing import Dict
 
 from .messages.data_packet import DataPacket
 from .sending.output import Output
@@ -13,8 +14,8 @@ from .sending.output_thread import OutputThread, DEFAULT_PORT
 
 
 class sACNsender:
-    def __init__(self, bind_address: str = "0.0.0.0", bind_port: int = DEFAULT_PORT, source_name: str = "default source name",
-                 cid: tuple = (), fps: int = 30):
+    def __init__(self, bind_address: str = "0.0.0.0", bind_port: int = DEFAULT_PORT,
+                 source_name: str = "default source name", cid: tuple = (), fps: int = 30):
         """
         Creates a sender object. A sender is used to manage multiple sACN universes and handles their sending.
         DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
@@ -33,7 +34,7 @@ class sACNsender:
         if len(cid) != 16:
             cid = tuple(int(random.random() * 255) for _ in range(0, 16))
         self.__CID: tuple = cid
-        self._outputs = {}
+        self._outputs: Dict[int, Output] = {}
         self._fps = fps
         self.bindAddress = bind_address
         self.bind_port = bind_port
@@ -55,21 +56,28 @@ class sACNsender:
 
     def deactivate_output(self, universe: int):
         """
-        Deactivates an existing sending. Every data from the existing sending will be lost. (TTL, Multicast, DMX data, ..)
-        :param universe: the universe to deactivate
+        Deactivates an existing sending. Every data from the existing sending output will be lost.
+        (TTL, Multicast, DMX data, ..)
+        :param universe: the universe to deactivate. If the universe was not activated before, no error is raised
         """
         check_universe(universe)
+        try:  # try to send out three messages with stream_termination bit set to 1
+            self._outputs[universe]._packet.option_StreamTerminated = True
+            for i in range(0, 3):
+                self._output_thread.send_out(self._outputs[universe])
+        except:
+            pass
         try:
             del self._outputs[universe]
         except:
             pass
 
-    def get_active_outputs(self) -> list:
+    def get_active_outputs(self) -> tuple:
         """
         Returns a list with all active outputs. Useful when iterating over all sender indexes.
         :return: list: a list with int (every int is a activated universe. May be not sorted)
         """
-        return list(self._outputs.keys())
+        return tuple(self._outputs.keys())
 
     def move_universe(self, universe_from: int, universe_to: int):
         """
