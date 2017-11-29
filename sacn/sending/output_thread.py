@@ -38,19 +38,27 @@ class OutputThread(threading.Thread):
         last_time_uni_discover = 0
         self.enabled_flag = True
         while self.enabled_flag:
+            time_stamp = time.time()
+
+            # send out universe discovery packets if necessary
+            if abs(time.time() - last_time_uni_discover) > E131_E131_UNIVERSE_DISCOVERY_INTERVAL \
+                    and self.universeDiscovery:
+                self.send_uni_discover_packets()
+                last_time_uni_discover = time.time()
+
             # go through the list of outputs and send everything out that has to be send out
-            for output in self._outputs.values():
+            for output in list(self._outputs.values()):  # dict may changes size during iteration (multithreading)
                 # send out when the 1 second interval is over
                 if abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed:
                     # make socket multicast-aware: (set TTL)
                     self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, output.ttl)
                     self.send_out(output)
-            time.sleep(1 / self.fps)  # this is just a rough temp solution
-            # send out universe discovery packets if necessary
-            if abs(time.time() - last_time_uni_discover) > E131_E131_UNIVERSE_DISCOVERY_INTERVAL \
-               and self.universeDiscovery:
-                self.send_uni_discover_packets()
-                last_time_uni_discover = time.time()
+
+            time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
+            if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
+                time_to_sleep = 0
+            time.sleep(time_to_sleep)
+            # this sleeps nearly exactly so long that the loop is called every 1/fps seconds
         self._socket.close()
 
     def send_out(self, output: Output):
@@ -70,13 +78,13 @@ class OutputThread(threading.Thread):
         # the changed flag is not necessary any more
         output._changed = False
 
-    def send_packet(self, packet, destination: str):
-        MESSAGE = bytearray(packet.getBytes())
-        self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
-
     def send_uni_discover_packets(self):  # hint: on windows a bind address must be set, to use broadcast
         packets = UniverseDiscoveryPacket.make_multiple_uni_disc_packets(
             cid=self.__CID, sourceName=self._sourceName, universes=list(self._outputs.keys()))
         for packet in packets:
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self.send_packet(packet=packet, destination="<broadcast>")
+
+    def send_packet(self, packet, destination: str):
+        MESSAGE = bytearray(packet.getBytes())
+        self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))

@@ -37,7 +37,7 @@ class UniverseDiscoveryPacket(RootLayer):
         return tuple(self._universes)
     @universes.setter
     def universes(self, universes: tuple):
-        if len(universes)>512:
+        if len(universes) > 512:
             raise TypeError(f'Universes is a tuple with a max length of 512! The data in the tuple has to be int! '
                             f'Length was {len(universes)}')
         self._universes = sorted(universes)
@@ -113,13 +113,13 @@ class UniverseDiscoveryPacket(RootLayer):
         else:  # just get how long the list has to be. Just read and think about the if statement.
             # Should be self-explaining
             num_of_packets = int(len(universes)/512)
-
+        universes.sort()
         for i in range(0, num_of_packets):
-            if i<num_of_packets-1:
-                tmpUniverses = universes[i*512:i*512+511]
-            else:  # if we are here then the for is in the last loop
-                tmpUniverses = universes[i*512:len(universes)-1]
-
+            if i == num_of_packets-1:
+                tmpUniverses = universes[i * 512:len(universes)]
+                # if we are here, then the for is in the last loop
+            else:
+                tmpUniverses = universes[i * 512:(i+1) * 512]
             # create new UniverseDiscoveryPacket and append it to the list. Page and lastPage are getting special values
             tmpList.append(UniverseDiscoveryPacket(cid=cid, sourceName=sourceName, universes=tmpUniverses,
                                                    page=i, lastPage=num_of_packets-1))

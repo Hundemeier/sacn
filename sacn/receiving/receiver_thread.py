@@ -50,6 +50,7 @@ class receiverThread(threading.Thread):
     def check_for_timeouts(self):
         # check all DataTimestamps for timeouts
         for key, value in list(self.lastDataTimestamps.items()):
+            #  this is converted to list, because the length of the dict changes
             if check_timeout(value):
                 for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
                     try:

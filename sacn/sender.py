@@ -151,4 +151,4 @@ class sACNsender:
 
 def check_universe(universe: int):
     if universe not in range(1, 64000):
-        raise TypeError('Universe must be between [1-63999]')
+        raise TypeError(f'Universe must be between [1-63999]! Universe was {universe}')
