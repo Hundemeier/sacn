@@ -9,6 +9,7 @@ For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_
 Currently missing features:
  * discovery messages (receiving)
  * custom ports (because this is not recommended)
+ * out-of-order packet detection
 
 ## Setup
 To install the package use pip. Go to the folder where your setup.py is located and execute `pip install . ` to 
