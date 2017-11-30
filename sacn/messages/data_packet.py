@@ -117,7 +117,7 @@ class DataPacket(RootLayer):
         return tuple(rtrnList)
 
     @staticmethod
-    def make_data_packet(raw_data):
+    def make_data_packet(raw_data) -> 'DataPacket':
         """
         Converts raw byte data to a sACN DataPacket. Note that the raw bytes have to come from a 2016 sACN Message.
         This does not support Sync Addresses, Force_Sync option and DMX Start code!

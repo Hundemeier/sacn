@@ -43,17 +43,17 @@ class sACNsender:
         self._universeDiscovery: bool = universeDiscovery
 
     @property
-    def universeDiscovery(self):
+    def universeDiscovery(self) -> bool:
         return self._universeDiscovery
     @universeDiscovery.setter
-    def universeDiscovery(self, universeDiscovery: bool):
+    def universeDiscovery(self, universeDiscovery: bool) -> None:
         self._universeDiscovery = universeDiscovery
         try:  # try to set the value for the output thread
             self._output_thread.universeDiscovery = universeDiscovery
         except:
             pass
 
-    def activate_output(self, universe: int):
+    def activate_output(self, universe: int) -> None:
         """
         Activates a universe that's then starting to sending every second.
         See http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf for more information
@@ -67,7 +67,7 @@ class sACNsender:
         new_output = Output(DataPacket(cid=self.__CID, sourceName=self.source_name, universe=universe))
         self._outputs[universe] = new_output
 
-    def deactivate_output(self, universe: int):
+    def deactivate_output(self, universe: int) -> None:
         """
         Deactivates an existing sending. Every data from the existing sending output will be lost.
         (TTL, Multicast, DMX data, ..)
@@ -92,7 +92,7 @@ class sACNsender:
         """
         return tuple(self._outputs.keys())
 
-    def move_universe(self, universe_from: int, universe_to: int):
+    def move_universe(self, universe_from: int, universe_to: int) -> None:
         """
         Moves an sending from one universe to another. All settings are being restored and only the universe changes
         :param universe_from: the universe that should be moved
@@ -114,7 +114,7 @@ class sACNsender:
         except:
             return None
 
-    def start(self, bind_address=None, bind_port: int = None, fps: int = None):
+    def start(self, bind_address=None, bind_port: int = None, fps: int = None) -> None:
         """
         Starts or restarts a new Thread with the parameters given in the constructor or
         the parameters given in this function.
@@ -135,7 +135,7 @@ class sACNsender:
                                            bind_port=bind_port, fps=fps, universe_discovery=self._universeDiscovery)
         self._output_thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Tries to stop a current running sender. A running Thread will be stopped and should terminate.
         """

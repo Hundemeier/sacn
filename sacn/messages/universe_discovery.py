@@ -1,6 +1,8 @@
 """
 This class represents an universe discovery packet of the E1.31 Standard.
 """
+from typing import List
+
 from .root_layer import RootLayer, VECTOR_ROOT_E131_EXTENDED, \
     VECTOR_E131_EXTENDED_DISCOVERY, VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST,\
     make_flagsandlength, int_to_bytes
@@ -73,7 +75,7 @@ class UniverseDiscoveryPacket(RootLayer):
         return tuple(rtrnList)
 
     @staticmethod
-    def make_universe_discovery_packet(raw_data):
+    def make_universe_discovery_packet(raw_data) -> 'UniverseDiscoveryPacket':
         # Check if the length is sufficient
         if len(raw_data) < 120:
             raise TypeError('The length of the provided data is not long enough! Min length is 120!')
@@ -97,7 +99,7 @@ class UniverseDiscoveryPacket(RootLayer):
         return tmp_packet
 
     @staticmethod
-    def make_multiple_uni_disc_packets(cid: tuple, sourceName: str, universes: list) -> list:
+    def make_multiple_uni_disc_packets(cid: tuple, sourceName: str, universes: list) -> List['UniverseDiscoveryPacket']:
         """
         Creates a list with universe discovery packets based on the given data. It creates automatically enough packets
         for the given universes list.
@@ -113,7 +115,7 @@ class UniverseDiscoveryPacket(RootLayer):
         else:  # just get how long the list has to be. Just read and think about the if statement.
             # Should be self-explaining
             num_of_packets = int(len(universes)/512)
-        universes.sort()
+        universes.sort()  # E1.31 wants that the send out universes are sorted
         for i in range(0, num_of_packets):
             if i == num_of_packets-1:
                 tmpUniverses = universes[i * 512:len(universes)]

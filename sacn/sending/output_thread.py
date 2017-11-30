@@ -47,12 +47,10 @@ class OutputThread(threading.Thread):
                 last_time_uni_discover = time.time()
 
             # go through the list of outputs and send everything out that has to be send out
-            for output in list(self._outputs.values()):  # dict may changes size during iteration (multithreading)
-                # send out when the 1 second interval is over
-                if abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed:
-                    # make socket multicast-aware: (set TTL)
-                    self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, output.ttl)
-                    self.send_out(output)
+            # Note: dict may changes size during iteration (multithreading)
+            [self.send_out(output) for output in list(self._outputs.values())
+             # send out when the 1 second interval is over
+             if abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed]
 
             time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
             if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
@@ -65,9 +63,8 @@ class OutputThread(threading.Thread):
         # 1st: Destination (check if multicast)
         if output.multicast:
             udp_ip = output._packet.calculate_multicast_addr()
-            # make socket multicast-aware: (set TTL) for some reason that does not work here,
-            # so its in the run method from above
-            # socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, sending.ttl)
+            # make socket multicast-aware: (set TTL)
+            self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, output.ttl)
         else:
             udp_ip = output.destination
 
