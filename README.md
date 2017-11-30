@@ -50,8 +50,13 @@ sender[1].multicast = True  # set multicast to True
 # Keep in mind that if multicast is on, unicast is not used
 sender[1].dmx_data = (1, 2, 3, 4)  # some test DMX data
 
-time.sleep(10)  # send the data for 10 seconds
-sender.stop()  # do not forget to stop the sender
+try:
+    time.sleep(10)  # send the data for 10 seconds
+except KeyboardInterrupt:
+    sender.stop()  
+    print("Stopped....")
+
+sender.stop()  
 ```
 
 You can activate an output universe via `activate_output(<universe>)` and then change the attributes of this universe
@@ -106,8 +111,13 @@ def callback(packet):  # packet type: sacn.DataPacket
 # optional: if you want to use multicast use this function with the universe as parameter
 receiver.join_multicast(1)
 
-time.sleep(10)  # receive for 10 seconds
-receiver.stop()
+try:
+    time.sleep(10)  # send the data for 10 seconds
+except KeyboardInterrupt:
+    sender.stop()  
+    print("Stopped....")
+
+sender.stop()  
 ```
 
 The usage of the receiver is way more simple than the sender.
