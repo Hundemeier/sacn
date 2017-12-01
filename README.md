@@ -29,6 +29,8 @@ The thread sends out the data every *1/fps* seconds. This provides synchronizati
 out the same time) and reduces network traffic even if you give the sender new data more often than the *fps*.
 A simple description would be to say that the data that you give the sACNsender is subsampled by the *fps*.
 You can tweak this *fps* by simply change it when creating the `sACNsender` object.
+
+This function works according to the [E1.31][e1.31]. See 6.6.1 for more information.
 ### Receiving
 A very simple solution, as you just create a `sACNreceiver` object and use `start()` a new thread that is running in
 the background and calls the callbacks when new sACN data arrives.
