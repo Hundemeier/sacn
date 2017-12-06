@@ -2,13 +2,14 @@
 import threading
 import time
 import socket
+from typing import Dict
 
 from ..messages.data_packet import DataPacket
 from ..receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
 
 
 class receiverThread(threading.Thread):
-    def __init__(self, socket, callbacks: dict):
+    def __init__(self, socket, callbacks: Dict[any, list]):
         """
         This is a private class and should not be used elsewhere. It handles the while loop running in the thread.
         :param socket: the socket to use to listen. It will not be initalized and only the socket.recv function is used.
@@ -17,13 +18,16 @@ class receiverThread(threading.Thread):
         """
         self.enabled_flag = True
         self.socket = socket
-        self.callbacks = callbacks
+        self.callbacks: dict = callbacks
         # previousData for storing the last data that was send in a universe to check if the data has changed
-        self.previousData = {}
+        self.previousData: dict = {}
         # priorities are stored here. This is for checking if the incoming data has the best priority.
-        self.priorities = {}
+        # universes are the keys and the value is a tuple with the last priority and the time when this priority recently was received
+        self.priorities: Dict[int, tuple] = {}
         # store the last timestamp when something on an universe arrived for checking for timeouts
-        self.lastDataTimestamps = {}
+        self.lastDataTimestamps: dict = {}
+        # store the last sequence number of a universe here:
+        self.lastSequence: dict = {}
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
@@ -44,36 +48,25 @@ class receiverThread(threading.Thread):
                 continue
 
             self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet)
-            self.check_and_refresh_priorities(tmp_packet)
+            self.refresh_priorities(tmp_packet)
+            if not self.is_legal_priority(tmp_packet):
+                continue
+            if not self.is_legal_sequence(tmp_packet):  # check for bad sequence number
+                continue
             self.fire_callbacks_universe(tmp_packet)
 
-    def check_for_timeouts(self):
+    def check_for_timeouts(self) -> None:
         # check all DataTimestamps for timeouts
         for key, value in list(self.lastDataTimestamps.items()):
             #  this is converted to list, because the length of the dict changes
             if check_timeout(value):
-                for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
-                    try:
-                        callback(universe=key, changed='timeout')
-                    except:
-                        pass
-                del self.lastDataTimestamps[key]
+                self.fire_timeout_callback_and_delete(key)
 
-    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket):
+    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket) -> None:
         # refresh the last timestamp on a universe, but check if its the last message of a stream
         # (the stream is terminated by the Stream termination bit)
         if packet.option_StreamTerminated:
-            try:
-                del self.lastDataTimestamps[packet.universe]  # delete the timestamp so that the callback is
-            except:
-                pass
-            # not fired twice or more
-            # fire callback
-            for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
-                try:
-                    callback(universe=packet.universe, changed='timeout')
-                except:
-                    pass
+            self.fire_timeout_callback_and_delete(packet.universe)
         else:
             # check if we add or refresh the data in lastDataTimestamps
             if packet.universe not in self.lastDataTimestamps.keys():
@@ -84,24 +77,63 @@ class receiverThread(threading.Thread):
                         pass
             self.lastDataTimestamps[packet.universe] = current_time_millis()
 
-    def check_and_refresh_priorities(self, packet: DataPacket):
+    def fire_timeout_callback_and_delete(self, universe: int):
+        for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
+            try:
+                callback(universe=universe, changed='timeout')
+            except:
+                pass
+        # delete the timestamp so that the callback is not fired multiple times
+        del self.lastDataTimestamps[universe]
+        # delete sequence entries so that no packet out of order problems occur
+        del self.lastSequence[universe]
+
+    def refresh_priorities(self, packet: DataPacket) -> None:
         # check the priority and refresh the priorities dict
-        # first: check if the stored priority has timeouted and make the current packets priority the new one
+        # check if the stored priority has timeouted and make the current packets priority the new one
         if packet.universe not in self.priorities.keys() or \
            self.priorities[packet.universe] is None or \
            check_timeout(self.priorities[packet.universe][1]) or \
            self.priorities[packet.universe][0] <= packet.priority:  # if the send priority is higher or
             # equal than the stored one, than make the priority the new one
-
             self.priorities[packet.universe] = (packet.priority, current_time_millis())
 
-    def fire_callbacks_universe(self, packet: DataPacket):
-        # call the listeners for the universe but before check if the data has changed
-        # check if there are listeners for the universe before proceeding
-        # check if the tmp_packet 's priority is high enough to get processed
+    def is_legal_sequence(self, packet: DataPacket) -> bool:
+        """
+        Check if the Sequence number of the DataPacket is legal.
+        For more information see page 17 of http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf.
+        :param packet: the packet to check
+        :return: true if the sequence is legal. False if the sequence number is bad
+        """
+        # if the sequence of the packet is smaller than the last received sequence, return false
+        # therefore calculate the difference between the two values:
+        try:  # try, because self.lastSequence might not been initialized
+            diff = packet.sequence - self.lastSequence[packet.universe]
+            # if diff is between ]-20,0], return False for a bad packet sequence
+            if 0 >= diff > -20:
+                return False
+        except:
+            pass
+        # if the sequence is good, return True and refresh the list with the new value
+        self.lastSequence[packet.universe] = packet.sequence
+        return True
+
+    def is_legal_priority(self, packet: DataPacket):
+        """
+        Check if the given packet has high enough priority for the stored values for the packet's universe.
+        :param packet: the packet to check
+        :return: returns True if the priority is good. Otherwise False
+        """
+        # check if the packet's priority is high enough to get processed
         if packet.universe not in self.callbacks.keys() or \
            packet.priority < self.priorities[packet.universe][0]:
-            return  # return if the universe is not interesting
+            return False  # return if the universe is not interesting
+        else:
+            return True
+
+    def fire_callbacks_universe(self, packet: DataPacket) -> None:
+        # call the listeners for the universe but before check if the data has changed
+        # check if there are listeners for the universe before proceeding
         if packet.universe not in self.previousData.keys() or \
            self.previousData[packet.universe] is None or \
            self.previousData[packet.universe] != packet.dmxData:

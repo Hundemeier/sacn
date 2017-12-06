@@ -8,8 +8,13 @@ For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_
 
 Currently missing features:
  * discovery messages (receiving)
+ * E1.31 sync feature
  * custom ports (because this is not recommended)
- * out-of-order packet detection
+ 
+Features:
+ * out-of-order packet detection like the [E1.31][e1.31] 6.7.2
+ * multicast (on Windows this is a bit tricky though)
+ * auto flow control (see [The Internals/Sending](#Sending))
 
 ## Setup
 To install the package use pip. Go to the folder where your setup.py is located and execute `pip install . ` to 
@@ -38,7 +43,7 @@ the background and calls the callbacks when new sACN data arrives.
 ---
 ## Usage
 ### Sending
-To use the sending functionality you have to use the `sender.sACNsender`.
+To use the sending functionality you have to use the `sACNsender`.
 
 ```python
 import sacn
@@ -90,7 +95,7 @@ Note that a bind address is needed on Windows for sending out multicast packets.
  feature to function properly on Windows, you have to provide a bind address. Default: True
 
 ### Receiving
-To use the receiving functionality you have to use the `receiver.sACNreceiver`.
+To use the receiving functionality you have to use the `sACNreceiver`.
 
 ```python
 import sacn
@@ -113,7 +118,7 @@ receiver.stop()
 ```
 
 The usage of the receiver is way more simple than the sender.
-The `sACNreceiver` can be initalized with the following parameters:
+The `sACNreceiver` can be initialized with the following parameters:
  * `bind_address: str`: if you are on a Windows system and want to use multicast provide a valid interfaceIP-Address!
  Otherwise omit.
  * `bind_port: int`: Default: 5568. It is not recommended to change this value!
@@ -132,12 +137,12 @@ Functions:
  You can also use the decorator `listen_on(<trigger>, **kwargs)`. Possible trigger so far:
    * `availability`: gets called when there is no data for a universe anymore or there is now data 
    available. This gets also fired if a source terminates a stream via the stream_termination bit.  
-   The callback should get two arguments: `universe` and `changed`  
+   The callback should get two arguments: `callback(universe, changed)`
      * `universe: int`: is the universe where the action happened
      * `changed: str`: can be 'timeout' or 'available'
    * `universe`: registers a listener for the given universe. The callback gets only one parameter, the DataPacket. 
    You can also use the decorator `@listen_on('universe', universe=<universe>)`.  
-   The callback should have one argument: `packet`
+   The callback should have one argument: `callback(packet)`
      * `packet: DataPacket`: the received DataPacket with all information
 
 ### DataPacket
