@@ -4,3 +4,4 @@ sacn.egg-info/
 __pycache__/
 testing.py
 testing2.py
+setup.cfg
