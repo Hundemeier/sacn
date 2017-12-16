@@ -1,5 +1,5 @@
 # sACN / E1.31 module
-**BETA!** And therefore currently not in the pypi!
+**BETA!**
 
 This module is a simple sACN library that support the standard DMX message of the protocol.
 It is based on the [2016][e1.31] version of the official ANSI E1.31 standard.

@@ -8,4 +8,5 @@ setup(name='sacn',
       author_email='hundemeier99@gmail.com',
       license='MIT License',
       packages=['sacn'],
+      keywords = ['sacn', 'e131', 'e1.31', 'dmx'],
       zip_safe=False)
