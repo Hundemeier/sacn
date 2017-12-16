@@ -2,6 +2,7 @@
 import threading
 import time
 import socket
+import logging
 from typing import Dict
 
 from ..messages.data_packet import DataPacket
@@ -22,7 +23,8 @@ class receiverThread(threading.Thread):
         # previousData for storing the last data that was send in a universe to check if the data has changed
         self.previousData: dict = {}
         # priorities are stored here. This is for checking if the incoming data has the best priority.
-        # universes are the keys and the value is a tuple with the last priority and the time when this priority recently was received
+        # universes are the keys and
+        # the value is a tuple with the last priority and the time when this priority recently was received
         self.priorities: Dict[int, tuple] = {}
         # store the last timestamp when something on an universe arrived for checking for timeouts
         self.lastDataTimestamps: dict = {}
@@ -31,6 +33,7 @@ class receiverThread(threading.Thread):
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
+        logging.info(f'Started new sACN receiver thread')
         self.socket.settimeout(0.1)  # timeout as 100ms
         self.enabled_flag = True
         while self.enabled_flag:
@@ -46,6 +49,7 @@ class receiverThread(threading.Thread):
                 tmp_packet = DataPacket.make_data_packet(raw_data)
             except:  # try to make a DataPacket. If it fails just go over it
                 continue
+            logging.debug(f'Received sACN packet:\n{tmp_packet}')
 
             self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet)
             self.refresh_priorities(tmp_packet)
@@ -54,6 +58,7 @@ class receiverThread(threading.Thread):
             if not self.is_legal_sequence(tmp_packet):  # check for bad sequence number
                 continue
             self.fire_callbacks_universe(tmp_packet)
+        logging.info('Stopped sACN receiver thread')
 
     def check_for_timeouts(self) -> None:
         # check all DataTimestamps for timeouts
@@ -137,6 +142,7 @@ class receiverThread(threading.Thread):
         if packet.universe not in self.previousData.keys() or \
            self.previousData[packet.universe] is None or \
            self.previousData[packet.universe] != packet.dmxData:
+            logging.debug('')
             # set previous data and inherit callbacks
             self.previousData[packet.universe] = packet.dmxData
             for callback in self.callbacks[packet.universe]:

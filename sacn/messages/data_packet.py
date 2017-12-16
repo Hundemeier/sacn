@@ -27,6 +27,10 @@ class DataPacket(RootLayer):
         self.dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
+    def __str__(self):
+        return f'sACN DataPacket: Universe: {self.universe}, Priority: {self.priority}, Sequence: {self.sequence} ' \
+               f'CID: {self._cid}'
+
     @property
     def priority(self) -> int:
         return self._priority

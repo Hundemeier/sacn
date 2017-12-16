@@ -3,6 +3,7 @@
 import threading
 import socket
 import time
+import logging
 
 from .output import Output
 from ..messages.universe_discovery import UniverseDiscoveryPacket
@@ -27,13 +28,19 @@ class OutputThread(threading.Thread):
         self.universeDiscovery: bool = universe_discovery
 
     def run(self):
+        logging.info('Started sACN sender thread.')
         self._socket = socket.socket(socket.AF_INET,  # Internet
                                      socket.SOCK_DGRAM)  # UDP
         try:
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         except:  # Not all systems support multiple sockets on the same port and interface
             pass
-        self._socket.bind((self._bindAddress, self._bind_port))
+
+        try:
+            self._socket.bind((self._bindAddress, self._bind_port))
+            logging.info(f'Bind sender thread to IP:{self._bindAddress} Port:{self._bind_port}')
+        except:
+            logging.exception(f'Could not bind to IP:{self._bindAddress} Port:{self._bind_port}')
 
         last_time_uni_discover = 0
         self.enabled_flag = True
@@ -58,6 +65,7 @@ class OutputThread(threading.Thread):
             time.sleep(time_to_sleep)
             # this sleeps nearly exactly so long that the loop is called every 1/fps seconds
         self._socket.close()
+        logging.info('Stopped sACN sender thread')
 
     def send_out(self, output: Output):
         # 1st: Destination (check if multicast)
@@ -85,3 +93,4 @@ class OutputThread(threading.Thread):
     def send_packet(self, packet, destination: str):
         MESSAGE = bytearray(packet.getBytes())
         self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
+        logging.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
