@@ -7,8 +7,8 @@ E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
 LISTEN_ON_OPTIONS = ("availability", "universe")
 # this has to be up here, because otherwise we have a circular import that can not import those two
 
-from .receiving.receiver_thread import receiverThread
-from .messages.data_packet import calculate_multicast_addr
+from sacn.receiving.receiver_thread import receiverThread
+from sacn.messages.data_packet import calculate_multicast_addr
 
 
 class sACNreceiver:

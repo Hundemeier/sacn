@@ -8,9 +8,9 @@ http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 import random
 from typing import Dict
 
-from .messages.data_packet import DataPacket
-from .sending.output import Output
-from .sending.output_thread import OutputThread, DEFAULT_PORT
+from sacn.messages.data_packet import DataPacket
+from sacn.sending.output import Output
+from sacn.sending.output_thread import OutputThread, DEFAULT_PORT
 
 
 class sACNsender:

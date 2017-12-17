@@ -5,8 +5,8 @@ import socket
 import logging
 from typing import Dict
 
-from ..messages.data_packet import DataPacket
-from ..receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
+from sacn.messages.data_packet import DataPacket
+from sacn.receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
 
 
 class receiverThread(threading.Thread):

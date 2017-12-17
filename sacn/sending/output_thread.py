@@ -5,8 +5,8 @@ import socket
 import time
 import logging
 
-from .output import Output
-from ..messages.universe_discovery import UniverseDiscoveryPacket
+from sacn.sending.output import Output
+from sacn.messages.universe_discovery import UniverseDiscoveryPacket
 
 DEFAULT_PORT = 5568
 SEND_OUT_INTERVAL = 1
