@@ -18,7 +18,7 @@ Features:
 
 ## Setup
 This Package is in the pypi. To install the package use `pip install sacn`. Python 3.6 or newer required!
-
+To use the Libary `import sacn`.
 For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
 
 ## The Internals
