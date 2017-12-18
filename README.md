@@ -17,11 +17,9 @@ Features:
  * auto flow control (see [The Internals/Sending](#Sending))
 
 ## Setup
-To install the package use pip. Go to the folder where your setup.py is located and execute `pip install . ` to 
-install the Libary. Now you can import it with `import sacn`.
-
-Python 3.6 or newer required!
-
+This Package is in the pypi. To install the package use `pip install sacn`. Python 3.6 or newer required!
+To use the Libary `import sacn`.
+If you want to install directly from source, download or clone the repository and execute `pip install .` where the setup.py is located.
 For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
 
 ## The Internals
