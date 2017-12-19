@@ -14,7 +14,7 @@ Currently missing features:
 Features:
  * out-of-order packet detection like the [E1.31][e1.31] 6.7.2
  * multicast (on Windows this is a bit tricky though)
- * auto flow control (see [The Internals/Sending](#Sending))
+ * auto flow control (see [The Internals/Sending](#sending))
 
 ## Setup
 This Package is in the pypi. To install the package use `pip install sacn`. Python 3.6 or newer required!
