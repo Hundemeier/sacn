@@ -91,7 +91,10 @@ class receiverThread(threading.Thread):
         # delete the timestamp so that the callback is not fired multiple times
         del self.lastDataTimestamps[universe]
         # delete sequence entries so that no packet out of order problems occur
-        del self.lastSequence[universe]
+        try:
+            del self.lastSequence[universe]
+        except Exception:
+            pass # sometimes an error occurs here TODO: check why here comes an error
 
     def refresh_priorities(self, packet: DataPacket) -> None:
         # check the priority and refresh the priorities dict
