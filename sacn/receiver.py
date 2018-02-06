@@ -24,7 +24,8 @@ class sACNreceiver:
         # If you try to bind to all interfaces on Windows, no multicast data will arrive.
         self._bindAddress = bind_address
         self._thread = None
-        self._callbacks = {}
+        self._callbacks = {'availability': [],
+                           'universe': []} # init with empty list, because otherwise an error gets thrown
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         try:
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -117,5 +118,4 @@ class sACNreceiver:
 
     def __del__(self):
         # stop a potential running thread
-        print("Test")
         self.stop()
