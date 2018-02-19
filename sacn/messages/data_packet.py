@@ -28,8 +28,7 @@ class DataPacket(RootLayer):
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
-        return f'sACN DataPacket: Universe: {self.universe}, Priority: {self.priority}, Sequence: {self.sequence} ' \
-               f'CID: {self._cid}'        # TODO Port this
+        return 'sACN DataPacket: Universe:' + self.universe + ', Priority: ' +  self.priority +  'Sequence: ' + self.sequence + 'CID: ' + self._cid
 
     @property
     def priority(self):
@@ -37,7 +36,7 @@ class DataPacket(RootLayer):
     @priority.setter
     def priority(self, priority):
         if priority not in range(0, 201):
-            raise TypeError(f'priority must be in range [0-200]! value was {priority}')
+            raise TypeError('priority must be in range [0-200]! value was' + str(priority))
         self._priority = priority
 
     @property
@@ -46,7 +45,7 @@ class DataPacket(RootLayer):
     @universe.setter
     def universe(self, universe):
         if universe not in range(1, 64000):
-            raise TypeError(f'universe must be [1-63999]! value was {universe}')
+            raise TypeError('universe must be [1-63999]! value was ' +  str(universe))
         self._universe = universe
 
     @property
@@ -55,7 +54,7 @@ class DataPacket(RootLayer):
     @sequence.setter
     def sequence(self, sequence):
         if sequence not in range(0, 256):
-            raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
+            raise TypeError('Sequence is a byte! values: [0-255]! value was ' + str(sequence))
         self._sequence = sequence
     def sequence_increase(self):
         self._sequence += 1
@@ -154,4 +153,4 @@ class DataPacket(RootLayer):
 def calculate_multicast_addr(universe):
     hi_byte = universe >> 8  # a little bit shifting here
     lo_byte = universe & 0xFF  # a little bit mask there
-    return f"239.255.{hi_byte}.{lo_byte}"
+    return "239.255." + str(hi_byte) + "." + str(lo_byte)
