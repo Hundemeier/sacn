@@ -22,7 +22,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @page.setter
     def page(self, page):
         if page not in range(0, 256):
-            raise TypeError(f'Page is a byte! values: [0-255]! value was {page}')
+            raise TypeError('Page is a byte! values: [0-255]! value was ' + str(page))
         self._page = page
 
     @property
@@ -31,7 +31,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @lastPage.setter
     def lastPage(self, lastPage):
         if lastPage not in range(0, 256):
-            raise TypeError(f'Page is a byte! values: [0-255]! value was {lastPage}')
+            raise TypeError('Page is a byte! values: [0-255]! value was ' + str(lastPage))
         self._page = lastPage
 
     @property
@@ -40,8 +40,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @universes.setter
     def universes(self, universes):
         if len(universes) > 512:
-            raise TypeError(f'Universes is a tuple with a max length of 512! The data in the tuple has to be int! '
-                            f'Length was {len(universes)}')
+            raise TypeError('Universes is a tuple with a max length of 512! The data in the tuple has to be int! ' + 'Length was' + str(len(universes)))
         self._universes = sorted(universes)
         self.length = 121+(len(universes)*2)  # generate new length value for the packet
 
@@ -143,7 +142,7 @@ def convert_raw_data_to_universes(raw_data):
     return tuple(rtrnList)
 
 
-def two_bytes_to_int(hi_byte, low_byte) -> int:
+def two_bytes_to_int(hi_byte, low_byte):
     """
     Converts two bytes to a normal integer value.
     :param hi_byte: the high byte
