@@ -15,7 +15,7 @@ from sacn.sending.output_thread import OutputThread, DEFAULT_PORT
 
 class sACNsender:
     def __init__(self, bind_address = "0.0.0.0", bind_port = DEFAULT_PORT,
-                 source_name = "default source name", cid: tuple = (),
+                 source_name = "default source name", cid = (),
                  fps = 30, universeDiscovery = True):
         """
         Creates a sender object. A sender is used to manage multiple sACN universes and handles their sending.
@@ -151,4 +151,4 @@ class sACNsender:
 
 def check_universe(universe):
     if universe not in range(1, 64000):
-        raise TypeError(f'Universe must be between [1-63999]! Universe was {universe}')
+        raise TypeError('Universe must be between [1-63999]! Universe was ' + str(universe))

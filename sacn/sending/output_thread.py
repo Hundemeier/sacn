@@ -38,9 +38,9 @@ class OutputThread(threading.Thread):
 
         try:
             self._socket.bind((self._bindAddress, self._bind_port))
-            logging.info(f'Bind sender thread to IP:{self._bindAddress} Port:{self._bind_port}')
+            logging.info('Bind sender thread to IP:' + str(self._bindAddress) +  'Port:' + str(self._bind_port))
         except:
-            logging.exception(f'Could not bind to IP:{self._bindAddress} Port:{self._bind_port}')
+            logging.exception('Could not bind to Ip')
 
         last_time_uni_discover = 0
         self.enabled_flag = True
@@ -93,4 +93,4 @@ class OutputThread(threading.Thread):
     def send_packet(self, packet, destination):
         MESSAGE = bytearray(packet.getBytes())
         self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
-        logging.debug("Send out Packet to " + str(destination) + str(DEFAULT_PORT) + "with" + str(packet))          # TODO Does this work ?
+        logging.debug("Send out Packet to " + str(destination) + str(DEFAULT_PORT) + "with" + str(packet))      

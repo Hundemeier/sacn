@@ -10,7 +10,7 @@ from sacn.receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
 
 
 class receiverThread(threading.Thread):
-    def __init__(self, socket, callbacks: Dict[any, list]):
+    def __init__(self, socket, callbacks: Dict[any, list]):     # TODO Port this
         """
         This is a private class and should not be used elsewhere. It handles the while loop running in the thread.
         :param socket: the socket to use to listen. It will not be initalized and only the socket.recv function is used.
@@ -19,9 +19,9 @@ class receiverThread(threading.Thread):
         """
         self.enabled_flag = True
         self.socket = socket
-        self.callbacks: dict = callbacks
+        self.callbacks: dict = callbacks        
         # previousData for storing the last data that was send in a universe to check if the data has changed
-        self.previousData: dict = {}
+        self.previousData: dict = {}        
         # priorities are stored here. This is for checking if the incoming data has the best priority.
         # universes are the keys and
         # the value is a tuple with the last priority and the time when this priority recently was received
