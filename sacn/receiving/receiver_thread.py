@@ -25,15 +25,15 @@ class receiverThread(threading.Thread):
         # priorities are stored here. This is for checking if the incoming data has the best priority.
         # universes are the keys and
         # the value is a tuple with the last priority and the time when this priority recently was received
-        self.priorities: Dict[int, tuple] = {}
+        self.priorities: Dict[int, tuple] = {}      # TODO Port this
         # store the last timestamp when something on an universe arrived for checking for timeouts
-        self.lastDataTimestamps: dict = {}
+        self.lastDataTimestamps: dict = {}# TODO Port this
         # store the last sequence number of a universe here:
-        self.lastSequence: dict = {}
+        self.lastSequence: dict = {}# TODO Port this
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
-        logging.info(f'Started new sACN receiver thread')
+        logging.info('Started new sACN receiver thread')
         self.socket.settimeout(0.1)  # timeout as 100ms
         self.enabled_flag = True
         while self.enabled_flag:
@@ -49,7 +49,7 @@ class receiverThread(threading.Thread):
                 tmp_packet = DataPacket.make_data_packet(raw_data)
             except:  # try to make a DataPacket. If it fails just go over it
                 continue
-            logging.debug(f'Received sACN packet:\n{tmp_packet}')
+            logging.debug('Received sACN packet:' + str(tmp_packet))
 
             self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet)
             self.refresh_priorities(tmp_packet)
@@ -60,14 +60,14 @@ class receiverThread(threading.Thread):
             self.fire_callbacks_universe(tmp_packet)
         logging.info('Stopped sACN receiver thread')
 
-    def check_for_timeouts(self) -> None:
+    def check_for_timeouts(self):
         # check all DataTimestamps for timeouts
         for key, value in list(self.lastDataTimestamps.items()):
             #  this is converted to list, because the length of the dict changes
             if check_timeout(value):
                 self.fire_timeout_callback_and_delete(key)
 
-    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket) -> None:
+    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket):
         # refresh the last timestamp on a universe, but check if its the last message of a stream
         # (the stream is terminated by the Stream termination bit)
         if packet.option_StreamTerminated:
@@ -82,7 +82,7 @@ class receiverThread(threading.Thread):
                         pass
             self.lastDataTimestamps[packet.universe] = current_time_millis()
 
-    def fire_timeout_callback_and_delete(self, universe: int):
+    def fire_timeout_callback_and_delete(self, universe):
         for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
             try:
                 callback(universe=universe, changed='timeout')
@@ -96,7 +96,7 @@ class receiverThread(threading.Thread):
         except Exception:
             pass # sometimes an error occurs here TODO: check why here comes an error
 
-    def refresh_priorities(self, packet: DataPacket) -> None:
+    def refresh_priorities(self, packet: DataPacket):
         # check the priority and refresh the priorities dict
         # check if the stored priority has timeouted and make the current packets priority the new one
         if packet.universe not in self.priorities.keys() or \
@@ -106,7 +106,7 @@ class receiverThread(threading.Thread):
             # equal than the stored one, than make the priority the new one
             self.priorities[packet.universe] = (packet.priority, current_time_millis())
 
-    def is_legal_sequence(self, packet: DataPacket) -> bool:
+    def is_legal_sequence(self, packet: DataPacket):
         """
         Check if the Sequence number of the DataPacket is legal.
         For more information see page 17 of http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf.
@@ -139,7 +139,7 @@ class receiverThread(threading.Thread):
         else:
             return True
 
-    def fire_callbacks_universe(self, packet: DataPacket) -> None:
+    def fire_callbacks_universe(self, packet: DataPacket):
         # call the listeners for the universe but before check if the data has changed
         # check if there are listeners for the universe before proceeding
         if packet.universe not in self.previousData.keys() or \

@@ -55,7 +55,7 @@ class sACNreceiver:
         if trigger in LISTEN_ON_OPTIONS:
             if trigger == LISTEN_ON_OPTIONS[1]:  # if the trigger is universe, use the universe from args as key
                 try:
-                    self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]].append(func)
+                    self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]].append(func)      # TODO Find out about kwargs. 
                 except:
                     self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]] = [func]
             try:
@@ -63,7 +63,7 @@ class sACNreceiver:
             except:
                 self._callbacks[trigger] = [func]
         else:
-            raise TypeError(f'The given trigger "{trigger}" is not a valid one!')
+            raise TypeError("The given trigger is not a valid one!")
 
     def join_multicast(self, universe):
         """

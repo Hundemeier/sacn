@@ -14,18 +14,18 @@ E131_E131_UNIVERSE_DISCOVERY_INTERVAL = 10
 
 
 class OutputThread(threading.Thread):
-    def __init__(self, cid: tuple, source_name: str, outputs: dict, bind_address,
-                 bind_port: int = DEFAULT_PORT, fps: int = 30, universe_discovery: bool = True):
+    def __init__(self, cid, source_name, outputs, bind_address,
+                 bind_port = DEFAULT_PORT, fps = 30, universe_discovery = True):
         super().__init__(name='sACN sending/sender thread')
-        self.__CID: tuple = cid
-        self._sourceName: str = source_name
-        self._outputs: dict = outputs
+        self.__CID = cid
+        self._sourceName = source_name
+        self._outputs = outputs
         self._bindAddress = bind_address
-        self.enabled_flag: bool = True
-        self.fps: int = fps
+        self.enabled_flag = True
+        self.fps = fps
         self._bind_port = bind_port
-        self._socket: socket.socket = None
-        self.universeDiscovery: bool = universe_discovery
+        self._socket: socket.socket = None              # TODO _socket: port
+        self.universeDiscovery = universe_discovery
 
     def run(self):
         logging.info('Started sACN sender thread.')
@@ -54,7 +54,7 @@ class OutputThread(threading.Thread):
                 last_time_uni_discover = time.time()
 
             # go through the list of outputs and send everything out that has to be send out
-            # Note: dict may changes size during iteration (multithreading)
+            # Note may changes size during iteration (multithreading)
             [self.send_out(output) for output in list(self._outputs.values())
              # send out when the 1 second interval is over
              if abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed]
@@ -90,7 +90,7 @@ class OutputThread(threading.Thread):
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             self.send_packet(packet=packet, destination="<broadcast>")
 
-    def send_packet(self, packet, destination: str):
+    def send_packet(self, packet, destination):
         MESSAGE = bytearray(packet.getBytes())
         self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
-        logging.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
+        logging.debug("Send out Packet to " + str(destination) + str(DEFAULT_PORT) + "with" + str(packet))          # TODO Does this work ?

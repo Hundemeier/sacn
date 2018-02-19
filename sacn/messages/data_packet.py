@@ -13,47 +13,47 @@ from sacn.messages.root_layer import VECTOR_DMP_SET_PROPERTY, \
 
 
 class DataPacket(RootLayer):
-    def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
-                 sequence: int = 0, streamTerminated: bool = False, previewData: bool = False):
+    def __init__(self, cid, sourceName, universe, dmxData = (), priority = 100,
+                 sequence = 0, streamTerminated= False, previewData= False):
         self._vector1 = VECTOR_E131_DATA_PACKET
         self._vector2 = VECTOR_DMP_SET_PROPERTY
-        self.sourceName: str = sourceName
+        self.sourceName = sourceName
         self.priority = priority
         self._syncAddr = (0, 0)  # currently not supported
         self.universe = universe
-        self.option_StreamTerminated: bool = streamTerminated
-        self.option_PreviewData: bool = previewData
+        self.option_StreamTerminated= streamTerminated
+        self.option_PreviewData= previewData
         self.sequence = sequence
         self.dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
         return f'sACN DataPacket: Universe: {self.universe}, Priority: {self.priority}, Sequence: {self.sequence} ' \
-               f'CID: {self._cid}'
+               f'CID: {self._cid}'        # TODO Port this
 
     @property
-    def priority(self) -> int:
+    def priority(self):
         return self._priority
     @priority.setter
-    def priority(self, priority: int):
+    def priority(self, priority):
         if priority not in range(0, 201):
             raise TypeError(f'priority must be in range [0-200]! value was {priority}')
         self._priority = priority
 
     @property
-    def universe(self) -> int:
+    def universe(self):
         return self._universe
     @universe.setter
-    def universe(self, universe: int):
+    def universe(self, universe):
         if universe not in range(1, 64000):
             raise TypeError(f'universe must be [1-63999]! value was {universe}')
         self._universe = universe
 
     @property
-    def sequence(self) -> int:
+    def sequence(self):
         return self._sequence
     @sequence.setter
-    def sequence(self, sequence: int):
+    def sequence(self, sequence):
         if sequence not in range(0, 256):
             raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
@@ -63,10 +63,10 @@ class DataPacket(RootLayer):
             self._sequence = 0
 
     @property
-    def dmxData(self) -> tuple:
+    def dmxData(self):
         return self._dmxData
     @dmxData.setter
-    def dmxData(self, data: tuple):
+    def dmxData(self, data):
         """
         For legacy devices and to prevent errors, the length of the DMX data is normalized to 512
         """
@@ -77,7 +77,7 @@ class DataPacket(RootLayer):
         # in theory this class supports dynamic length, so the next line is correcting the length
         self.length = 126 + len(self._dmxData)
 
-    def getBytes(self) -> tuple:
+    def getBytes(self):
         rtrnList = super().getBytes()
         # Flags and Length Framing Layer:-------
         rtrnList.extend(make_flagsandlength(self.length - 38))
@@ -121,7 +121,7 @@ class DataPacket(RootLayer):
         return tuple(rtrnList)
 
     @staticmethod
-    def make_data_packet(raw_data) -> 'DataPacket':
+    def make_data_packet(raw_data):
         """
         Converts raw byte data to a sACN DataPacket. Note that the raw bytes have to come from a 2016 sACN Message.
         This does not support Sync Addresses, Force_Sync option and DMX Start code!
@@ -147,11 +147,11 @@ class DataPacket(RootLayer):
         tmpPacket.dmxData = raw_data[126:638]
         return tmpPacket
 
-    def calculate_multicast_addr(self) -> str:
+    def calculate_multicast_addr(self):
         return calculate_multicast_addr(self.universe)
 
 
-def calculate_multicast_addr(universe: int) -> str:
+def calculate_multicast_addr(universe):
     hi_byte = universe >> 8  # a little bit shifting here
     lo_byte = universe & 0xFF  # a little bit mask there
     return f"239.255.{hi_byte}.{lo_byte}"
