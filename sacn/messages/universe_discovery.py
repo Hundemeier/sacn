@@ -9,43 +9,43 @@ from sacn.messages.root_layer import RootLayer, VECTOR_ROOT_E131_EXTENDED, \
 
 
 class UniverseDiscoveryPacket(RootLayer):
-    def __init__(self, cid: tuple, sourceName: str, universes: tuple, page: int = 0, lastPage: int = 0):
-        self.sourceName: str = sourceName
-        self._page: int = page
-        self._lastPage: int = lastPage
-        self._universes: list = universes
+    def __init__(self, cid, sourceName, universes, page = 0, lastPage = 0):
+        self.sourceName = sourceName
+        self._page = page
+        self._lastPage = lastPage
+        self._universes = universes
         super().__init__((len(universes)*2)+120, cid, VECTOR_ROOT_E131_EXTENDED)
 
     @property
-    def page(self) -> int:
+    def page(self):
         return self._page
     @page.setter
-    def page(self, page: int):
+    def page(self, page):
         if page not in range(0, 256):
             raise TypeError(f'Page is a byte! values: [0-255]! value was {page}')
         self._page = page
 
     @property
-    def lastPage(self) -> int:
+    def lastPage(self):
         return self._page
     @lastPage.setter
-    def lastPage(self, lastPage: int):
+    def lastPage(self, lastPage):
         if lastPage not in range(0, 256):
             raise TypeError(f'Page is a byte! values: [0-255]! value was {lastPage}')
         self._page = lastPage
 
     @property
-    def universes(self) -> tuple:
+    def universes(self):
         return tuple(self._universes)
     @universes.setter
-    def universes(self, universes: tuple):
+    def universes(self, universes):
         if len(universes) > 512:
             raise TypeError(f'Universes is a tuple with a max length of 512! The data in the tuple has to be int! '
                             f'Length was {len(universes)}')
         self._universes = sorted(universes)
         self.length = 121+(len(universes)*2)  # generate new length value for the packet
 
-    def getBytes(self) -> tuple:
+    def getBytes(self):
         rtrnList = super().getBytes()
         # Flags and Length Framing Layer:--------------------
         rtrnList.extend(make_flagsandlength(self.length - 38))
@@ -99,7 +99,7 @@ class UniverseDiscoveryPacket(RootLayer):
         return tmp_packet
 
     @staticmethod
-    def make_multiple_uni_disc_packets(cid: tuple, sourceName: str, universes: list) -> List['UniverseDiscoveryPacket']:
+    def make_multiple_uni_disc_packets(cid, sourceName, universes: list) -> List['UniverseDiscoveryPacket']:
         """
         Creates a list with universe discovery packets based on the given data. It creates automatically enough packets
         for the given universes list.
@@ -128,12 +128,12 @@ class UniverseDiscoveryPacket(RootLayer):
         return tmpList
 
 
-def convert_raw_data_to_universes(raw_data) -> tuple:
+def convert_raw_data_to_universes(raw_data):
     """
     converts the raw data to a readable universes tuple. The raw_data is scanned from index 0 and has to have
     16-bit numbers with high byte first. The data is converted from the start to the beginning!
     :param raw_data: the raw data to convert
-    :return: tuple full with 16-bit numbers
+    :return full with 16-bit numbers
     """
     if len(raw_data)%2 != 0:
         raise TypeError('The given data has not a length that is a multiple of 2!')
@@ -143,7 +143,7 @@ def convert_raw_data_to_universes(raw_data) -> tuple:
     return tuple(rtrnList)
 
 
-def two_bytes_to_int(hi_byte: int, low_byte: int) -> int:
+def two_bytes_to_int(hi_byte, low_byte) -> int:
     """
     Converts two bytes to a normal integer value.
     :param hi_byte: the high byte

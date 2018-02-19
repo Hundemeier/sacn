@@ -24,7 +24,7 @@ class OutputThread(threading.Thread):
         self.enabled_flag = True
         self.fps = fps
         self._bind_port = bind_port
-        self._socket: socket.socket = None              # TODO _socket: port
+        self._socket = None            
         self.universeDiscovery = universe_discovery
 
     def run(self):

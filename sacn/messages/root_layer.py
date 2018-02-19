@@ -21,7 +21,7 @@ VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST = (0, 0, 0, 0x1)
 
 
 class RootLayer:
-    def __init__(self, length: int, cid: tuple, vector: tuple):
+    def __init__(self, length, cid, vector):
         self.length = length
         if(len(vector) != 4):
             raise ValueError('the length of the vector is not 4!')
@@ -30,7 +30,7 @@ class RootLayer:
             raise ValueError('the length of the CID is not 16!')
         self._cid = cid
 
-    def getBytes(self) -> list:
+    def getBytes(self):
         '''Returns the Root layer as list with bytes'''
         tmpList = []
         tmpList.extend(_FIRST_INDEX)
@@ -46,14 +46,14 @@ class RootLayer:
         return tmpList
 
     @property
-    def length(self) -> int:
+    def length(self):
         return self._length
     @length.setter
-    def length(self, value: int):
+    def length(self, value):
         self._length = value & 0xFFF  # only use the least 12-Bit
 
 
-def int_to_bytes(integer: int) -> list:
+def int_to_bytes(integer):
     """
     Converts a single integer number to an list with the length 2 with highest byte first.
     The returned list contains values in the range [0-255]
@@ -63,7 +63,7 @@ def int_to_bytes(integer: int) -> list:
     return [(integer >> 8) & 0xFF, integer & 0xFF]
 
 
-def make_flagsandlength(length: int) -> list:
+def make_flagsandlength(length):
     """
     Converts a length value in a Flags and Length list with two bytes in the correct order.
     :param length: the length to convert. should be 12-bit value

@@ -35,11 +35,11 @@ class sACNsender:
         if len(cid) != 16:
             cid = tuple(int(random.random() * 255) for _ in range(0, 16))
         self.__CID = cid
-        self._outputs: Dict[int, Output] = {}           # TODO How to port this ?
+        self._outputs = {}           # TODO How to port this ?
         self._fps = fps
         self.bindAddress = bind_address
         self.bind_port = bind_port
-        self._output_thread: OutputThread = None
+        self._output_thread = None
         self._universeDiscovery = universeDiscovery
 
     @property

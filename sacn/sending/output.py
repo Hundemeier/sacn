@@ -11,7 +11,7 @@ class Output:
     """
     def __init__(self, packet: DataPacket, last_time_send = 0, destination = "127.0.0.1",
                  multicast = False, ttl = 8):
-        self._packet: DataPacket = packet       # TODO Port packet:
+        self._packet = packet       # TODO Port packet:
         self._last_time_send = last_time_send
         self.destination = destination
         self.multicast = multicast

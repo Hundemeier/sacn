@@ -19,17 +19,17 @@ class receiverThread(threading.Thread):
         """
         self.enabled_flag = True
         self.socket = socket
-        self.callbacks: dict = callbacks        
+        self.callbacks= callbacks        
         # previousData for storing the last data that was send in a universe to check if the data has changed
-        self.previousData: dict = {}        
+        self.previousData= {}        
         # priorities are stored here. This is for checking if the incoming data has the best priority.
         # universes are the keys and
         # the value is a tuple with the last priority and the time when this priority recently was received
-        self.priorities: Dict[int, tuple] = {}      # TODO Port this
+        self.priorities = {}      
         # store the last timestamp when something on an universe arrived for checking for timeouts
-        self.lastDataTimestamps: dict = {}# TODO Port this
+        self.lastDataTimestamp = {}
         # store the last sequence number of a universe here:
-        self.lastSequence: dict = {}# TODO Port this
+        self.lastSequence = {}
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
