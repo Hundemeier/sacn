@@ -10,7 +10,7 @@ from sacn.receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
 
 
 class receiverThread(threading.Thread):
-    def __init__(self, socket, callbacks: Dict[any, list]):     # TODO Port this
+    def __init__(self, socket, callbacks):
         """
         This is a private class and should not be used elsewhere. It handles the while loop running in the thread.
         :param socket: the socket to use to listen. It will not be initalized and only the socket.recv function is used.
@@ -67,7 +67,7 @@ class receiverThread(threading.Thread):
             if check_timeout(value):
                 self.fire_timeout_callback_and_delete(key)
 
-    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket):
+    def check_for_stream_terminated_and_refresh_timestamp(self, packet):
         # refresh the last timestamp on a universe, but check if its the last message of a stream
         # (the stream is terminated by the Stream termination bit)
         if packet.option_StreamTerminated:
@@ -96,7 +96,7 @@ class receiverThread(threading.Thread):
         except Exception:
             pass # sometimes an error occurs here TODO: check why here comes an error
 
-    def refresh_priorities(self, packet: DataPacket):
+    def refresh_priorities(self, packet):
         # check the priority and refresh the priorities dict
         # check if the stored priority has timeouted and make the current packets priority the new one
         if packet.universe not in self.priorities.keys() or \
@@ -106,7 +106,7 @@ class receiverThread(threading.Thread):
             # equal than the stored one, than make the priority the new one
             self.priorities[packet.universe] = (packet.priority, current_time_millis())
 
-    def is_legal_sequence(self, packet: DataPacket):
+    def is_legal_sequence(self, packet):
         """
         Check if the Sequence number of the DataPacket is legal.
         For more information see page 17 of http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf.
@@ -126,7 +126,7 @@ class receiverThread(threading.Thread):
         self.lastSequence[packet.universe] = packet.sequence
         return True
 
-    def is_legal_priority(self, packet: DataPacket):
+    def is_legal_priority(self, packet):
         """
         Check if the given packet has high enough priority for the stored values for the packet's universe.
         :param packet: the packet to check
@@ -139,7 +139,7 @@ class receiverThread(threading.Thread):
         else:
             return True
 
-    def fire_callbacks_universe(self, packet: DataPacket):
+    def fire_callbacks_universe(self, packet):
         # call the listeners for the universe but before check if the data has changed
         # check if there are listeners for the universe before proceeding
         if packet.universe not in self.previousData.keys() or \
