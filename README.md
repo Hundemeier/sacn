@@ -1,5 +1,6 @@
 # sACN / E1.31 module
 **BETA!**
+**Python3.5 Port**
 
 This module is a simple sACN library that support the standard DMX message of the protocol.
 It is based on the [2016][e1.31] version of the official ANSI E1.31 standard.
@@ -17,7 +18,7 @@ Features:
  * auto flow control (see [The Internals/Sending](#sending))
 
 ## Setup
-This Package is in the pypi. To install the package use `pip install sacn`. Python 3.6 or newer required!
+The Python3.5 port is not in the pypi and must be installed directly from source. The original package (Python 3.6) is in the pypi and can be installed with `pip install sacn`. 
 To use the Libary `import sacn`.
 If you want to install directly from source, download or clone the repository and execute `pip install .` where the setup.py is located.
 For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
