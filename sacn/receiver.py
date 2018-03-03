@@ -33,18 +33,18 @@ class sACNreceiver:
             pass
         self.sock.bind((bind_address, bind_port))
 
-    def listen_on(self, trigger):
+    def listen_on(self, trigger, **kwargs):
         """
         This is a simple decorator for registering a callback for an event. You can also use 'register_listener'.
         A list with all possible options is available via LISTEN_ON_OPTIONS.
         :param trigger: Currently supported options: 'universe availability change', 'universe'
         """
         def decorator(f):
-            self.register_listener(trigger, f)
+            self.register_listener(trigger, f, **kwargs)
             return f
         return decorator
 
-    def register_listener(self, trigger, func):
+    def register_listener(self, trigger, func, **kwargs):
         """
         Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
         To get a list with all valid triggers, use LISTEN_ON_OPTIONS.
