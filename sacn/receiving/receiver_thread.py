@@ -3,7 +3,7 @@ import threading
 import time
 import socket
 import logging
-from typing import Dict
+#from typing import Dict#requires Python 3.5
 
 from sacn.messages.data_packet import DataPacket
 from sacn.receiver import LISTEN_ON_OPTIONS, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
