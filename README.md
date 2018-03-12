@@ -28,8 +28,8 @@ You can create a new `sACNsender` object and provide the necessary information. 
 This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when 
 finished! If the data is not changed, the same DMX data is send out every second.
 
-The thread sends out the data every *1/fps* seconds. This provides synchronization (the data for all universes is send
-out the same time) and reduces network traffic even if you give the sender new data more often than the *fps*.
+The thread sends out the data every *1/fps* seconds. This reduces network traffic even if you give the sender new data 
+more often than the *fps*.
 A simple description would be to say that the data that you give the sACNsender is subsampled by the *fps*.
 You can tweak this *fps* by simply change it when creating the `sACNsender` object.
 
@@ -71,8 +71,8 @@ Available Attributes for `sender[<universe>].<attribute>` are:
  * `multicast: bool`: set whether to send out via multicast or not. Default: False
  If True the data is send out via multicast and not unicast.
  * `ttl: int`: the time-to-live for the packets that are send out via mutlicast on this universe. Default: 8
- * `priority: int`: the priority for this universe that is send out. If multiple sources in a network are sending to
- the same receiver the data with the highest priority wins. Default: 100
+ * `priority: int`: (must be between 0-200) the priority for this universe that is send out. If multiple sources in a 
+ network are sending to the same receiver the data with the highest priority wins. Default: 100
  * `preview_data: bool`: Flag to mark the data as preview data for visualization purposes. Default: False
  * `dmx_data: tuple`: the DMX data as a tuple. Max length is 512 and for legacy devices all data that is smaller than
  512 is merged to a 512 length tuple with 0 as filler value. The values in the tuple have to be [0-255]!
