@@ -34,6 +34,8 @@ A simple description would be to say that the data that you give the sACNsender 
 You can tweak this *fps* by simply change it when creating the `sACNsender` object.
 
 This function works according to the [E1.31][e1.31]. See 6.6.1 for more information.
+
+Note: Since Version 1.4 there is a manual flush feature available. See Usage/Sending for more info.
 ### Receiving
 A very simple solution, as you just create a `sACNreceiver` object and use `start()` a new thread that is running in
 the background and calls the callbacks when new sACN data arrives.
@@ -63,6 +65,10 @@ You can activate an output universe via `activate_output(<universe>)` and then c
 via `sender[<universe>].<attribute>`. To deactivate an output use `deactivate_output(<universe>)`. The output is 
 terminated like the [E1.31][e1.31] describes it on page 14.
 
+If you want to flush manually and the sender thread should not send out automatic, use the 
+`sACNsender.manual_flush` option. This is useful when you want to use a fixture that is using more than one universe 
+and all the data on multiple universes should send out at the same time.
+
 Tip: you can get the activated outputs with `get_active_outputs()` and you can move an output with all its settings
 from one universe to another with `move_universe(<from>, <to>)`.
 
@@ -91,6 +97,29 @@ Note that a bind address is needed on Windows for sending out multicast packets.
  * `fps: int` the frames per second. See explanation above. Has to be >0. Default: 30
  * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this 
  feature to function properly on Windows, you have to provide a bind address. Default: True
+ * `manual_flush: bool` if set to true, the output-thread will not automatically send out packets. USe the function
+  `flush()` to send out all universes. Default: False
+  
+Example for the usage of the manual_flush:
+```python
+import sacn
+
+sender = sacn.sACNsender()
+sender.start()
+sender.activate_output(1)
+sender.activate_output(2)
+sender[1].multicast = True
+sender[2].multicast = True
+
+sender.manual_flush = True # turning off the automatic sending of packets
+sender[1].dmx_data = (1, 2, 3, 4)  # some test DMX data
+sender[2].dmx_data = (5, 6, 7, 8)  # by the time we are here, the above data would be already send out, 
+# if manual_flush would be False. This could cause some jitter
+# so instead we are flushing manual
+sender.flush()
+sender.manual_flush = False # keep maunal flush off as long as possible, because if it is on, the automatic sending of 
+# packets is turned off and that would not be legal to the E1.31
+```
 
 ### Receiving
 To use the receiving functionality you have to use the `sACNreceiver`.
@@ -157,6 +186,9 @@ The DataPacket provides following attributes:
  * `option_PreviewData: bool`: True if this data is for visualization purposes.
  * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
  Filled with 0 for empty spaces.
+ 
+### Changelog
+ * 1.4: Added a manual flush feature for sending out all universes at the same time. Thanks to ahodges9 for the idea.
 
 
 [e1.31]: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf

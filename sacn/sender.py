@@ -53,6 +53,16 @@ class sACNsender:
         except:
             pass
 
+    @property
+    def maunal_flush(self) -> bool:
+        return self._output_thread.manual_flush
+    @maunal_flush.setter
+    def manual_flush(self, manual_flush: bool) -> None:
+        self._output_thread.manual_flush = manual_flush
+
+    def flush(self):
+        self._output_thread.send_out_all_universes()
+
     def activate_output(self, universe: int) -> None:
         """
         Activates a universe that's then starting to sending every second.

@@ -38,13 +38,3 @@ class Output:
     def preview_data(self, preview_data: bool):
         self._packet.option_PreviewData = preview_data
 
-#
-# class customList(list):
-#     def __init__(self, args):
-#         super().__init__(args)
-#         self.callbacks: list = []
-#
-#     def __setitem__(self, key, value):
-#         super().__setitem__(key, value)
-#         for callback in self.callbacks:
-#             callback()
