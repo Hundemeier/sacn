@@ -127,7 +127,7 @@ sender[2].dmx_data = (5, 6, 7, 8)  # by the time we are here, the above data wou
 # so instead we are flushing manual
 sender.flush()
 sender.manual_flush = False # keep maunal flush off as long as possible, because if it is on, the automatic 
-# sending of packets is turned off and that would not be legal to the E1.31
+# sending of packets is turned off and that is not recommended
 ```
 
 ### Receiving
