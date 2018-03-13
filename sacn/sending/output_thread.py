@@ -7,6 +7,8 @@ import logging
 
 from sacn.sending.output import Output
 from sacn.messages.universe_discovery import UniverseDiscoveryPacket
+from sacn.messages.sync_packet import SyncPacket
+from sacn.messages.data_packet import calculate_multicast_addr
 
 DEFAULT_PORT = 5568
 SEND_OUT_INTERVAL = 1
@@ -101,8 +103,15 @@ class OutputThread(threading.Thread):
     def send_out_all_universes(self):
         """
         Sends out all universes in one go. This is not done by this thread! This is done by the caller's thread.
+        This uses the E1.31 sync mechanism to try to sync all universes.
+        Note that not all receivers support this feature.
         """
+        sync_universe = 63999  # currently hardcoded
         # go through the list of outputs and send everything out
         # Note: dict may changes size during iteration (multithreading)
         for output in list(self._outputs.values()):
+            output._packet.syncAddr = sync_universe  # temporarily set the sync universe
             self.send_out(output)
+            output._packet.syncAddr = 0
+        sync_packet = SyncPacket(cid=self.__CID, syncAddr=sync_universe)
+        self.send_packet(sync_packet, calculate_multicast_addr(sync_universe))

@@ -8,13 +8,14 @@ For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_
 
 Currently missing features:
  * discovery messages (receiving)
- * E1.31 sync feature
+ * E1.31 sync feature (on the receiver side)
  * custom ports (because this is not recommended)
  
 Features:
  * out-of-order packet detection like the [E1.31][e1.31] 6.7.2
  * multicast (on Windows this is a bit tricky though)
  * auto flow control (see [The Internals/Sending](#sending))
+ * E1.31 sync feature (see manual_flush)
 
 ## Setup
 This Package is in the pypi. To install the package use `pip install sacn`. Python 3.6 or newer required!
@@ -36,6 +37,10 @@ You can tweak this *fps* by simply change it when creating the `sACNsender` obje
 This function works according to the [E1.31][e1.31]. See 6.6.1 for more information.
 
 Note: Since Version 1.4 there is a manual flush feature available. See Usage/Sending for more info.
+This feature also uses the sync feature of the sACN protocol (see page 36 on [E1.31][e1.31]).
+Currently this is not implemented like the recommended way (this does not wait before sending out the sync packet), but
+it should work on a normal local network without too many latency differences.
+When the `flush()` function is called, all data is send out at the same time and immediately a sync packet is send out.
 ### Receiving
 A very simple solution, as you just create a `sACNreceiver` object and use `start()` a new thread that is running in
 the background and calls the callbacks when new sACN data arrives.
@@ -97,8 +102,12 @@ Note that a bind address is needed on Windows for sending out multicast packets.
  * `fps: int` the frames per second. See explanation above. Has to be >0. Default: 30
  * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this 
  feature to function properly on Windows, you have to provide a bind address. Default: True
- * `manual_flush: bool` if set to true, the output-thread will not automatically send out packets. USe the function
+ * `manual_flush: bool` if set to true, the output-thread will not automatically send out packets. Use the function
   `flush()` to send out all universes. Default: False
+  
+When manually flushed, the E1.31 sync feature is used. So all universe data is send out, and after all data was send out
+a sync packet is send to all receivers and then they are allowed to display the received data. Note that not all 
+receiver implemented this feature of the sACN protocol.
   
 Example for the usage of the manual_flush:
 ```python
