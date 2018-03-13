@@ -14,7 +14,7 @@ from sacn.messages.root_layer import VECTOR_DMP_SET_PROPERTY, \
 
 class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
-                 sequence: int = 0, streamTerminated: bool = False, previewData: bool = False):
+                 sequence: int = 0, streamTerminated: bool = False, previewData: bool = False, forceSync: bool = False):
         self._vector1 = VECTOR_E131_DATA_PACKET
         self._vector2 = VECTOR_DMP_SET_PROPERTY
         self.sourceName: str = sourceName
@@ -23,6 +23,7 @@ class DataPacket(RootLayer):
         self.universe = universe
         self.option_StreamTerminated: bool = streamTerminated
         self.option_PreviewData: bool = previewData
+        self.option_ForceSync: bool = forceSync
         self.sequence = sequence
         self.dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
@@ -101,6 +102,8 @@ class DataPacket(RootLayer):
         tmpOptionsFlags += int(self.option_StreamTerminated) << 6
         # preview data:
         tmpOptionsFlags += int(self.option_PreviewData) << 7
+        # force synchronization
+        tmpOptionsFlags += int(self.option_ForceSync) << 5
         rtrnList.append(tmpOptionsFlags)
         # universe:-----------------------------
         rtrnList.extend(int_to_bytes(self._universe))
@@ -143,7 +146,8 @@ class DataPacket(RootLayer):
         # SyncAddress in the future?!
         tmpPacket.sequence = raw_data[111]
         tmpPacket.option_PreviewData = bool(raw_data[112] & 0b10000000)  # use the 7th bit as preview_data
-        tmpPacket.option_StreamTerminated = bool(raw_data[112] & 0b01000000)
+        tmpPacket.option_StreamTerminated = bool(raw_data[112] & 0b01000000)  # use bit 6 as stream terminated
+        tmpPacket.option_ForceSync = bool(raw_data[112] & 0b00100000)  # use bit 5 as force sync
         tmpPacket.dmxData = raw_data[126:638]
         return tmpPacket
 
