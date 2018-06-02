@@ -118,7 +118,7 @@ sender = sacn.sACNsender()
 sender.start()
 sender.activate_output(1)
 sender.activate_output(2)
-sender[1].multicast = True
+sender[1].multicast = True # keep in mind that multicast on windows is a bit different
 sender[2].multicast = True
 
 sender.manual_flush = True # turning off the automatic sending of packets
