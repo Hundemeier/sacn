@@ -54,9 +54,9 @@ class sACNsender:
             pass
 
     @property
-    def maunal_flush(self) -> bool:
+    def manual_flush(self) -> bool:
         return self._output_thread.manual_flush
-    @maunal_flush.setter
+    @manual_flush.setter
     def manual_flush(self, manual_flush: bool) -> None:
         self._output_thread.manual_flush = manual_flush
 
