@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='sacn',
-      version='1.3',
+      version='1.4',
       description='sACN / E1.31 module for easy handling of DMX data over ethernet',
       url='https://www.github.com/Hundemeier/sacn',
       author='Hundemeier',

@@ -14,15 +14,17 @@ from sacn.messages.root_layer import VECTOR_DMP_SET_PROPERTY, \
 
 class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
-                 sequence: int = 0, streamTerminated: bool = False, previewData: bool = False):
+                 sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
+                 forceSync: bool = False, sync_universe: int = 0):
         self._vector1 = VECTOR_E131_DATA_PACKET
         self._vector2 = VECTOR_DMP_SET_PROPERTY
         self.sourceName: str = sourceName
         self.priority = priority
-        self._syncAddr = (0, 0)  # currently not supported
+        self.syncAddr = sync_universe
         self.universe = universe
         self.option_StreamTerminated: bool = streamTerminated
         self.option_PreviewData: bool = previewData
+        self.option_ForceSync: bool = forceSync
         self.sequence = sequence
         self.dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
@@ -48,6 +50,15 @@ class DataPacket(RootLayer):
         if universe not in range(1, 64000):
             raise TypeError(f'universe must be [1-63999]! value was {universe}')
         self._universe = universe
+
+    @property
+    def syncAddr(self) -> int:
+        return self._syncAddr
+    @syncAddr.setter
+    def syncAddr(self, sync_universe: int):
+        if sync_universe not in range(0, 64000):
+            raise TypeError(f'sync_universe must be [1-63999]! value was {sync_universe}')
+        self._syncAddr = sync_universe
 
     @property
     def sequence(self) -> int:
@@ -92,7 +103,7 @@ class DataPacket(RootLayer):
         # priority------------------------------
         rtrnList.append(self._priority)
         # syncAddress---------------------------
-        rtrnList.extend(self._syncAddr)
+        rtrnList.extend(int_to_bytes(self._syncAddr))
         # sequence------------------------------
         rtrnList.append(self._sequence)
         # Options Flags:------------------------
@@ -101,6 +112,8 @@ class DataPacket(RootLayer):
         tmpOptionsFlags += int(self.option_StreamTerminated) << 6
         # preview data:
         tmpOptionsFlags += int(self.option_PreviewData) << 7
+        # force synchronization
+        tmpOptionsFlags += int(self.option_ForceSync) << 5
         rtrnList.append(tmpOptionsFlags)
         # universe:-----------------------------
         rtrnList.extend(int_to_bytes(self._universe))
@@ -124,7 +137,7 @@ class DataPacket(RootLayer):
     def make_data_packet(raw_data) -> 'DataPacket':
         """
         Converts raw byte data to a sACN DataPacket. Note that the raw bytes have to come from a 2016 sACN Message.
-        This does not support Sync Addresses, Force_Sync option and DMX Start code!
+        This does not support DMX Start code!
         :param raw_data: raw bytes as tuple or list
         :return: a DataPacket with the properties set like the raw bytes
         """
@@ -140,10 +153,11 @@ class DataPacket(RootLayer):
         tmpPacket = DataPacket(cid=raw_data[22:38], sourceName=str(raw_data[44:108]),
                                universe=(0xFF * raw_data[113]) + raw_data[114])  # high byte first
         tmpPacket.priority = raw_data[108]
-        # SyncAddress in the future?!
+        tmpPacket.syncAddr = (0xFF * raw_data[109]) + raw_data[110]  # high byte first
         tmpPacket.sequence = raw_data[111]
         tmpPacket.option_PreviewData = bool(raw_data[112] & 0b10000000)  # use the 7th bit as preview_data
-        tmpPacket.option_StreamTerminated = bool(raw_data[112] & 0b01000000)
+        tmpPacket.option_StreamTerminated = bool(raw_data[112] & 0b01000000)  # use bit 6 as stream terminated
+        tmpPacket.option_ForceSync = bool(raw_data[112] & 0b00100000)  # use bit 5 as force sync
         tmpPacket.dmxData = raw_data[126:638]
         return tmpPacket
 

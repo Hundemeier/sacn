@@ -7,6 +7,8 @@ import logging
 
 from sacn.sending.output import Output
 from sacn.messages.universe_discovery import UniverseDiscoveryPacket
+from sacn.messages.sync_packet import SyncPacket
+from sacn.messages.data_packet import calculate_multicast_addr
 
 DEFAULT_PORT = 5568
 SEND_OUT_INTERVAL = 1
@@ -26,6 +28,7 @@ class OutputThread(threading.Thread):
         self._bind_port = bind_port
         self._socket: socket.socket = None
         self.universeDiscovery: bool = universe_discovery
+        self.manual_flush: bool = False
 
     def run(self):
         logging.info('Started sACN sender thread.')
@@ -56,8 +59,10 @@ class OutputThread(threading.Thread):
             # go through the list of outputs and send everything out that has to be send out
             # Note: dict may changes size during iteration (multithreading)
             [self.send_out(output) for output in list(self._outputs.values())
+             # only send if the manual flush feature is disabled
              # send out when the 1 second interval is over
-             if abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed]
+             if not self.manual_flush and
+             (abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed)]
 
             time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
             if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
@@ -94,3 +99,19 @@ class OutputThread(threading.Thread):
         MESSAGE = bytearray(packet.getBytes())
         self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
         logging.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
+
+    def send_out_all_universes(self):
+        """
+        Sends out all universes in one go. This is not done by this thread! This is done by the caller's thread.
+        This uses the E1.31 sync mechanism to try to sync all universes.
+        Note that not all receivers support this feature.
+        """
+        sync_universe = 63999  # currently hardcoded
+        # go through the list of outputs and send everything out
+        # Note: dict may changes size during iteration (multithreading)
+        for output in list(self._outputs.values()):
+            output._packet.syncAddr = sync_universe  # temporarily set the sync universe
+            self.send_out(output)
+            output._packet.syncAddr = 0
+        sync_packet = SyncPacket(cid=self.__CID, syncAddr=sync_universe)
+        self.send_packet(sync_packet, calculate_multicast_addr(sync_universe))
