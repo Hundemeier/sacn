@@ -1,5 +1,4 @@
 # sACN / E1.31 module
-**BETA!**
 
 This module is a simple sACN library that support the standard DMX message of the protocol.
 It is based on the [2016][e1.31] version of the official ANSI E1.31 standard.
@@ -41,6 +40,7 @@ This feature also uses the sync feature of the sACN protocol (see page 36 on [E1
 Currently this is not implemented like the recommended way (this does not wait before sending out the sync packet), but
 it should work on a normal local network without too many latency differences.
 When the `flush()` function is called, all data is send out at the same time and immediately a sync packet is send out.
+
 ### Receiving
 A very simple solution, as you just create a `sACNreceiver` object and use `start()` a new thread that is running in
 the background and calls the callbacks when new sACN data arrives.
