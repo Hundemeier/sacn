@@ -1,8 +1,10 @@
 sacn.egg-info/
 .*
+!.github/
 !/.gitignore
 __pycache__/
 testing.py
 testing2.py
 setup.cfg
 dist/
+build/
