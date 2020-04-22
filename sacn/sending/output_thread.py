@@ -97,8 +97,11 @@ class OutputThread(threading.Thread):
 
     def send_packet(self, packet, destination: str):
         MESSAGE = bytearray(packet.getBytes())
-        self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
-        logging.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
+        try:
+            self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
+            logging.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
+        except OSError as e:
+            logging.warning('Failed to send packet', exc_info=e)
 
     def send_out_all_universes(self):
         """
