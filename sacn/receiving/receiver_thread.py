@@ -30,10 +30,11 @@ class receiverThread(threading.Thread):
         self.lastDataTimestamps: dict = {}
         # store the last sequence number of a universe here:
         self.lastSequence: dict = {}
+        self.logger = logging.getLogger('sacn')
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
-        logging.info(f'Started new sACN receiver thread')
+        self.logger.info(f'Started new sACN receiver thread')
         self.socket.settimeout(0.1)  # timeout as 100ms
         self.enabled_flag = True
         while self.enabled_flag:
@@ -49,7 +50,7 @@ class receiverThread(threading.Thread):
                 tmp_packet = DataPacket.make_data_packet(raw_data)
             except:  # try to make a DataPacket. If it fails just go over it
                 continue
-            logging.debug(f'Received sACN packet:\n{tmp_packet}')
+            self.logger.debug(f'Received sACN packet:\n{tmp_packet}')
 
             self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet)
             self.refresh_priorities(tmp_packet)
@@ -58,7 +59,7 @@ class receiverThread(threading.Thread):
             if not self.is_legal_sequence(tmp_packet):  # check for bad sequence number
                 continue
             self.fire_callbacks_universe(tmp_packet)
-        logging.info('Stopped sACN receiver thread')
+        self.logger.info('Stopped sACN receiver thread')
 
     def check_for_timeouts(self) -> None:
         # check all DataTimestamps for timeouts
@@ -145,7 +146,7 @@ class receiverThread(threading.Thread):
         if packet.universe not in self.previousData.keys() or \
            self.previousData[packet.universe] is None or \
            self.previousData[packet.universe] != packet.dmxData:
-            logging.debug('')
+            self.logger.debug('')
             # set previous data and inherit callbacks
             self.previousData[packet.universe] = packet.dmxData
             for callback in self.callbacks[packet.universe]:
