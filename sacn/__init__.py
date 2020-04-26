@@ -4,4 +4,4 @@ from sacn.messages.data_packet import DataPacket
 from sacn.messages.universe_discovery import UniverseDiscoveryPacket
 
 import logging
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+logging.getLogger('sacn').addHandler(logging.NullHandler())

@@ -29,9 +29,10 @@ class OutputThread(threading.Thread):
         self._socket: socket.socket = None
         self.universeDiscovery: bool = universe_discovery
         self.manual_flush: bool = False
+        self.logger = logging.getLogger('sacn')
 
     def run(self):
-        logging.info('Started sACN sender thread.')
+        self.logger.info('Started sACN sender thread.')
         self._socket = socket.socket(socket.AF_INET,  # Internet
                                      socket.SOCK_DGRAM)  # UDP
         try:
@@ -41,9 +42,9 @@ class OutputThread(threading.Thread):
 
         try:
             self._socket.bind((self._bindAddress, self._bind_port))
-            logging.info(f'Bind sender thread to IP:{self._bindAddress} Port:{self._bind_port}')
+            self.logger.info(f'Bind sender thread to IP:{self._bindAddress} Port:{self._bind_port}')
         except:
-            logging.exception(f'Could not bind to IP:{self._bindAddress} Port:{self._bind_port}')
+            self.logger.exception(f'Could not bind to IP:{self._bindAddress} Port:{self._bind_port}')
 
         last_time_uni_discover = 0
         self.enabled_flag = True
@@ -70,7 +71,7 @@ class OutputThread(threading.Thread):
             time.sleep(time_to_sleep)
             # this sleeps nearly exactly so long that the loop is called every 1/fps seconds
         self._socket.close()
-        logging.info('Stopped sACN sender thread')
+        self.logger.info('Stopped sACN sender thread')
 
     def send_out(self, output: Output):
         # 1st: Destination (check if multicast)
@@ -99,9 +100,9 @@ class OutputThread(threading.Thread):
         MESSAGE = bytearray(packet.getBytes())
         try:
             self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
-            logging.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
+            self.logger.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
         except OSError as e:
-            logging.warning('Failed to send packet', exc_info=e)
+            self.logger.warning('Failed to send packet', exc_info=e)
 
     def send_out_all_universes(self):
         """
