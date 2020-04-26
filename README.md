@@ -9,7 +9,7 @@ Currently missing features:
  * discovery messages (receiving)
  * E1.31 sync feature (on the receiver side)
  * custom ports (because this is not recommended)
- 
+
 Features:
  * out-of-order packet detection like the [E1.31][e1.31] 6.7.2
  * multicast (on Windows this is a bit tricky though)
@@ -17,7 +17,7 @@ Features:
  * E1.31 sync feature (see manual_flush)
 
 ## Setup
-This Package is in the pypi. To install the package use `pip install sacn`. Python 3.6 or newer required!
+This Package is in the [pypi](https://pypi.org/project/sacn/). To install the package use `pip install sacn`. Python 3.6 or newer required!
 To use the Libary `import sacn`.
 If you want to install directly from source, download or clone the repository and execute `pip install .` where the setup.py is located.
 For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
@@ -25,10 +25,10 @@ For more information on pip installation see: https://packaging.python.org/tutor
 ## The Internals
 ### Sending
 You can create a new `sACNsender` object and provide the necessary information. Then you have to use `start()`.
-This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when 
+This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when
 finished! If the data is not changed, the same DMX data is send out every second.
 
-The thread sends out the data every *1/fps* seconds. This reduces network traffic even if you give the sender new data 
+The thread sends out the data every *1/fps* seconds. This reduces network traffic even if you give the sender new data
 more often than the *fps*.
 A simple description would be to say that the data that you give the sACNsender is subsampled by the *fps*.
 You can tweak this *fps* by simply change it when creating the `sACNsender` object.
@@ -67,11 +67,11 @@ sender.stop()  # do not forget to stop the sender
 ```
 
 You can activate an output universe via `activate_output(<universe>)` and then change the attributes of this universe
-via `sender[<universe>].<attribute>`. To deactivate an output use `deactivate_output(<universe>)`. The output is 
+via `sender[<universe>].<attribute>`. To deactivate an output use `deactivate_output(<universe>)`. The output is
 terminated like the [E1.31][e1.31] describes it on page 14.
 
-If you want to flush manually and the sender thread should not send out automatic, use the 
-`sACNsender.manual_flush` option. This is useful when you want to use a fixture that is using more than one universe 
+If you want to flush manually and the sender thread should not send out automatic, use the
+`sACNsender.manual_flush` option. This is useful when you want to use a fixture that is using more than one universe
 and all the data on multiple universes should send out at the same time.
 
 Tip: you can get the activated outputs with `get_active_outputs()` and you can move an output with all its settings
@@ -82,7 +82,7 @@ Available Attributes for `sender[<universe>].<attribute>` are:
  * `multicast: bool`: set whether to send out via multicast or not. Default: False
  If True the data is send out via multicast and not unicast.
  * `ttl: int`: the time-to-live for the packets that are send out via mutlicast on this universe. Default: 8
- * `priority: int`: (must be between 0-200) the priority for this universe that is send out. If multiple sources in a 
+ * `priority: int`: (must be between 0-200) the priority for this universe that is send out. If multiple sources in a
  network are sending to the same receiver the data with the highest priority wins. Default: 100
  * `preview_data: bool`: Flag to mark the data as preview data for visualization purposes. Default: False
  * `dmx_data: tuple`: the DMX data as a tuple. Max length is 512 and for legacy devices all data that is smaller than
@@ -100,15 +100,15 @@ Note that a bind address is needed on Windows for sending out multicast packets.
  * `source_name: str`: the source name used in the sACN packets. See the [standard][e1.31] for more information.
  * `cid: tuple`: the cid. If not given, a random CID will be generated. See the [standard][e1.31] for more information.
  * `fps: int` the frames per second. See explanation above. Has to be >0. Default: 30
- * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this 
+ * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this
  feature to function properly on Windows, you have to provide a bind address. Default: True
  * `manual_flush: bool` if set to true, the output-thread will not automatically send out packets. Use the function
   `flush()` to send out all universes. Default: False
-  
+
 When manually flushed, the E1.31 sync feature is used. So all universe data is send out, and after all data was send out
-a sync packet is send to all receivers and then they are allowed to display the received data. Note that not all 
+a sync packet is send to all receivers and then they are allowed to display the received data. Note that not all
 receiver implemented this feature of the sACN protocol.
-  
+
 Example for the usage of the manual_flush:
 ```python
 import sacn
@@ -163,24 +163,24 @@ The `sACNreceiver` can be initialized with the following parameters:
  * `bind_port: int`: Default: 5568. It is not recommended to change this value!
  Only use when you are know what you are doing!
 
-Please keep in mind to not use the callbacks for time consuming tasks! 
+Please keep in mind to not use the callbacks for time consuming tasks!
 If you do this, then the receiver can not react fast enough on incoming messages!
 
 Functions:
  * `join_multicast(<universe>)`: joins the multicast group for the specific universe. If you are on Windows you have to
  bind the receiver to a valid IP-Address. That is done in the constructor of a sACNreceiver.
  * `leave_multicast(<universe>)`: leave the multicast group specified by the universe.
- * `get_possible_universes()`: Returns a tuple with all universes that have sources that are sending out data and this 
+ * `get_possible_universes()`: Returns a tuple with all universes that have sources that are sending out data and this
  data is received by this machine
  * `register_listener(<trigger>, <callback>, **kwargs)`: register a listener for the given trigger.
  You can also use the decorator `listen_on(<trigger>, **kwargs)`. Possible trigger so far:
-   * `availability`: gets called when there is no data for a universe anymore or there is now data 
-   available. This gets also fired if a source terminates a stream via the stream_termination bit.  
+   * `availability`: gets called when there is no data for a universe anymore or there is now data
+   available. This gets also fired if a source terminates a stream via the stream_termination bit.
    The callback should get two arguments: `callback(universe, changed)`
      * `universe: int`: is the universe where the action happened
      * `changed: str`: can be 'timeout' or 'available'
-   * `universe`: registers a listener for the given universe. The callback gets only one parameter, the DataPacket. 
-   You can also use the decorator `@listen_on('universe', universe=<universe>)`.  
+   * `universe`: registers a listener for the given universe. The callback gets only one parameter, the DataPacket.
+   You can also use the decorator `@listen_on('universe', universe=<universe>)`.
    The callback should have one argument: `callback(packet)`
      * `packet: DataPacket`: the received DataPacket with all information
 
@@ -198,7 +198,7 @@ The DataPacket provides following attributes:
  * `option_PreviewData: bool`: True if this data is for visualization purposes.
  * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
  Filled with 0 for empty spaces.
- 
+
 ### Changelog
  * 1.4: Added a manual flush feature for sending out all universes at the same time. Thanks to ahodges9 for the idea.
 
