@@ -200,6 +200,8 @@ The DataPacket provides following attributes:
  Filled with 0 for empty spaces.
 
 ### Changelog
+ * 1.4.3: The sequence number of the sync-packet when using manual flush was not increased (Thanks to @BlakeGarner ! See #19 for more information)
+ * 1.4.2: The internal logging of the receiver_thread and output_thread was using the root logger instead of its module-logger. (Thanks to @mje-nz ! See #18 for more information)
  * 1.4: Added a manual flush feature for sending out all universes at the same time. Thanks to ahodges9 for the idea.
 
 
