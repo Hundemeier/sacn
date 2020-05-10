@@ -30,6 +30,7 @@ class OutputThread(threading.Thread):
         self.universeDiscovery: bool = universe_discovery
         self.manual_flush: bool = False
         self.logger = logging.getLogger('sacn')
+        self._sync_sequence = 0
 
     def run(self):
         self.logger.info('Started sACN sender thread.')
@@ -117,5 +118,9 @@ class OutputThread(threading.Thread):
             output._packet.syncAddr = sync_universe  # temporarily set the sync universe
             self.send_out(output)
             output._packet.syncAddr = 0
-        sync_packet = SyncPacket(cid=self.__CID, syncAddr=sync_universe)
+        sync_packet = SyncPacket(cid=self.__CID, syncAddr=sync_universe, sequence=self._sync_sequence)
+        # Increment sequence number for next time.
+        self._sync_sequence += 1
+        if self._sync_sequence > 255:
+            self._sync_sequence = 0
         self.send_packet(sync_packet, calculate_multicast_addr(sync_universe))
