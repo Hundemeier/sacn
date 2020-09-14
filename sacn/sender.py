@@ -6,7 +6,7 @@ http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
 
 import random
-from typing import Dict
+from typing import Dict, List
 
 from sacn.messages.data_packet import DataPacket
 from sacn.sending.output import Output
@@ -63,8 +63,21 @@ class sACNsender:
     def manual_flush(self, manual_flush: bool) -> None:
         self._output_thread.manual_flush = manual_flush
 
-    def flush(self):
-        self._output_thread.send_out_all_universes(self._sync_universe)
+    def flush(self, universes: List[int] = []):
+        """
+        Sends out all universes in one go. This is done on the caller's thread!
+        This uses the E1.31 sync mechanism to try to sync all universes.
+        Note that not all receivers support this feature.
+        :param universes: a list of universes to send. If not given, all will be sent.
+        :raises ValueError: when attempting to flush a universe that is not activated.
+        """
+        for uni in universes:
+            if uni not in self._outputs:
+                raise ValueError(f"Cannot flush universe {uni}, it is not active!")
+        self._output_thread.send_out_all_universes(
+            self._sync_universe,
+            self._outputs if not universes else {uni: self._outputs[uni] for uni in universes}
+        )
 
     def activate_output(self, universe: int) -> None:
         """
