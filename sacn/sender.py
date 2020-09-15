@@ -16,7 +16,8 @@ from sacn.sending.output_thread import OutputThread, DEFAULT_PORT
 class sACNsender:
     def __init__(self, bind_address: str = "0.0.0.0", bind_port: int = DEFAULT_PORT,
                  source_name: str = "default source name", cid: tuple = (),
-                 fps: int = 30, universeDiscovery: bool = True):
+                 fps: int = 30, universeDiscovery: bool = True,
+                 sync_universe: int = 63999):
         """
         Creates a sender object. A sender is used to manage multiple sACN universes and handles their sending.
         DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
@@ -30,6 +31,7 @@ class sACNsender:
         :param source_name: the source name used in the sACN packets.
         :param cid: the cid. If not given, a random CID will be generated.
         :param fps: the frames per second. See above explanation. Has to be >0
+        :param sync_universe: universe to send sync packets on.
         """
         self.source_name: str = source_name
         if len(cid) != 16:
@@ -41,6 +43,7 @@ class sACNsender:
         self.bind_port = bind_port
         self._output_thread: OutputThread = None
         self._universeDiscovery: bool = universeDiscovery
+        self._sync_universe: int = sync_universe
 
     @property
     def universeDiscovery(self) -> bool:
@@ -61,7 +64,7 @@ class sACNsender:
         self._output_thread.manual_flush = manual_flush
 
     def flush(self):
-        self._output_thread.send_out_all_universes()
+        self._output_thread.send_out_all_universes(self._sync_universe)
 
     def activate_output(self, universe: int) -> None:
         """

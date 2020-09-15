@@ -105,13 +105,12 @@ class OutputThread(threading.Thread):
         except OSError as e:
             self.logger.warning('Failed to send packet', exc_info=e)
 
-    def send_out_all_universes(self):
+    def send_out_all_universes(self, sync_universe: int):
         """
         Sends out all universes in one go. This is not done by this thread! This is done by the caller's thread.
         This uses the E1.31 sync mechanism to try to sync all universes.
         Note that not all receivers support this feature.
         """
-        sync_universe = 63999  # currently hardcoded
         # go through the list of outputs and send everything out
         # Note: dict may changes size during iteration (multithreading)
         for output in list(self._outputs.values()):
