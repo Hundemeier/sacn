@@ -102,8 +102,7 @@ Note that a bind address is needed on Windows for sending out multicast packets.
  * `fps: int` the frames per second. See explanation above. Has to be >0. Default: 30
  * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this
  feature to function properly on Windows, you have to provide a bind address. Default: True
- * `manual_flush: bool` if set to true, the output-thread will not automatically send out packets. Use the function
-  `flush()` to send out all universes. Default: False
+ * `sync_universe: int` set a specific universe used in the sync-packets. Default: 63999
 
 When manually flushed, the E1.31 sync feature is used. So all universe data is send out, and after all data was send out
 a sync packet is send to all receivers and then they are allowed to display the received data. Note that not all
@@ -200,6 +199,7 @@ The DataPacket provides following attributes:
  Filled with 0 for empty spaces.
 
 ### Changelog
+ * 1.4.4: The universe used for the sACN-sync messages can now be set when creating a `sACNsender` (Thanks to CrazyIvan359! See #21 for more information)
  * 1.4.3: The sequence number of the sync-packet when using manual flush was not increased (Thanks to @BlakeGarner ! See #19 for more information)
  * 1.4.2: The internal logging of the receiver_thread and output_thread was using the root logger instead of its module-logger. (Thanks to @mje-nz ! See #18 for more information)
  * 1.4: Added a manual flush feature for sending out all universes at the same time. Thanks to ahodges9 for the idea.
