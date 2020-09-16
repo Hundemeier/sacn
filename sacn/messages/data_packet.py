@@ -139,6 +139,7 @@ class DataPacket(RootLayer):
         Converts raw byte data to a sACN DataPacket. Note that the raw bytes have to come from a 2016 sACN Message.
         This does not support DMX Start code!
         :param raw_data: raw bytes as tuple or list
+        :raises TypeError: when the binary data does not match the criteria for a valid DMX data-packet
         :return: a DataPacket with the properties set like the raw bytes
         """
         # Check if the length is sufficient
@@ -150,8 +151,8 @@ class DataPacket(RootLayer):
            raw_data[117] != VECTOR_DMP_SET_PROPERTY:  # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
         if raw_data[125] != 0x00:
-            raise TypeError('Not a default Null Start Code for Dimmers per DMX512 & DMX512/1990')
-            
+            raise TypeError(f'{raw_data[125]} is not a default Null Start Code for Dimmers per DMX512 & DMX512/1990')
+
         tmpPacket = DataPacket(cid=raw_data[22:38], sourceName=str(raw_data[44:108]),
                                universe=(0xFF * raw_data[113]) + raw_data[114])  # high byte first
         tmpPacket.priority = raw_data[108]
