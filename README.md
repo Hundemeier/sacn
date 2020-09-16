@@ -199,6 +199,7 @@ The DataPacket provides following attributes:
  Filled with 0 for empty spaces.
 
 ### Changelog
+ * 1.4.5: When using a manual flush, only a specified list of universes can be flushed (Thanks to CrazyIvan359! See #22 for more information)
  * 1.4.4: The universe used for the sACN-sync messages can now be set when creating a `sACNsender` (Thanks to CrazyIvan359! See #21 for more information)
  * 1.4.3: The sequence number of the sync-packet when using manual flush was not increased (Thanks to @BlakeGarner ! See #19 for more information)
  * 1.4.2: The internal logging of the receiver_thread and output_thread was using the root logger instead of its module-logger. (Thanks to @mje-nz ! See #18 for more information)
