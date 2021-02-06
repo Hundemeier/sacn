@@ -50,7 +50,6 @@ class receiverThread(threading.Thread):
                 tmp_packet = DataPacket.make_data_packet(raw_data)
             except:  # try to make a DataPacket. If it fails just go over it
                 continue
-            self.logger.debug(f'Received sACN packet:\n{tmp_packet}')
 
             self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet)
             self.refresh_priorities(tmp_packet)
@@ -146,7 +145,6 @@ class receiverThread(threading.Thread):
         if packet.universe not in self.previousData.keys() or \
            self.previousData[packet.universe] is None or \
            self.previousData[packet.universe] != packet.dmxData:
-            self.logger.debug('')
             # set previous data and inherit callbacks
             self.previousData[packet.universe] = packet.dmxData
             for callback in self.callbacks[packet.universe]:
