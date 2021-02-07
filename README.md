@@ -199,6 +199,7 @@ The DataPacket provides following attributes:
  Filled with 0 for empty spaces.
 
 ### Changelog
+ * 1.5: Performance improvement: Deleted debugging statements in hot path of packet sending and receiving (Thanks to shauneccles! See #25 for more information)
  * 1.4.6: Fix: When creating a DataPacket with invalid DMX start codes (i.e. not `0x00`) an exception is thrown (Thanks to niggiover9000! See #11 for more information)
  * 1.4.5: When using a manual flush, only a specified list of universes can be flushed (Thanks to CrazyIvan359! See #22 for more information)
  * 1.4.4: The universe used for the sACN-sync messages can now be set when creating a `sACNsender` (Thanks to CrazyIvan359! See #21 for more information)
