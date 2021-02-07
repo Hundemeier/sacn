@@ -101,7 +101,6 @@ class OutputThread(threading.Thread):
         MESSAGE = bytearray(packet.getBytes())
         try:
             self._socket.sendto(MESSAGE, (destination, DEFAULT_PORT))
-            self.logger.debug(f'Send out Packet to {destination}:{DEFAULT_PORT} with following content:\n{packet}')
         except OSError as e:
             self.logger.warning('Failed to send packet', exc_info=e)
 
