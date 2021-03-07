@@ -9,12 +9,14 @@ Currently missing features:
  * discovery messages (receiving)
  * E1.31 sync feature (on the receiver side)
  * custom ports (because this is not recommended)
+ * receiving 0xDD start code per address priority packets
 
 Features:
  * out-of-order packet detection like the [E1.31][e1.31] 6.7.2
  * multicast (on Windows this is a bit tricky though)
  * auto flow control (see [The Internals/Sending](#sending))
  * E1.31 sync feature (see manual_flush)
+ * sending 0xDD start code per address priority packets
 
 ## Setup
 This Package is in the [pypi](https://pypi.org/project/sacn/). To install the package use `pip install sacn`. Python 3.6 or newer required!
@@ -26,7 +28,7 @@ For more information on pip installation see: https://packaging.python.org/tutor
 ### Sending
 You can create a new `sACNsender` object and provide the necessary information. Then you have to use `start()`.
 This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when
-finished! If the data is not changed, the same DMX data is send out every second.
+finished! If the data is not changed, the same DMX data is sent out every second.
 
 The thread sends out the data every *1/fps* seconds. This reduces network traffic even if you give the sender new data
 more often than the *fps*.
@@ -190,15 +192,19 @@ the module and is used in the callbacks of the receiver.
 The DataPacket provides following attributes:
  * `sourceName: str`: a string that is used to identify the source. Only the first 64 bytes are used.
  * `priority: int`: the priority used to manage multiple DMX data on one receiver. [1-200] Default: 100
- * `universe: int`: the universe for the whole message and its DMX data. [1-63999]
+ * `universe: int`: the universe for the whole message and its data. [1-63999]
  * `sequence: int`: the sequence number. Should increment for every new message and can be used to check for wrong
  order of arriving packets.
  * `option_StreamTerminated: bool`: True if this packet is the last one of the stream for the given universe.
  * `option_PreviewData: bool`: True if this data is for visualization purposes.
- * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
+ * `option_ForceSync: bool`: True if this should only function in a synchronized state.
+ * `dmxStartCode: int`: the start code for the data tuple. [1-255] Default: 0x00 for streaming level data. 0xDD is
+ used for per address priority extensions to E1.31 (often seen with ETC network equipment)
+ * `dmxData: tuple`: the data as tuple. Max length is 512; Shorter tuples are normalized to a length of 512.
  Filled with 0 for empty spaces.
 
 ### Changelog
+ * 1.6: Add sending support for 0xDD start code per address priority packets (often seen with ETC network equipment)
  * 1.5: Performance improvement: Deleted debugging statements in hot path of packet sending and receiving (Thanks to shauneccles! See #25 for more information)
  * 1.4.6: Fix: When creating a DataPacket with invalid DMX start codes (i.e. not `0x00`) an exception is thrown (Thanks to niggiover9000! See #11 for more information)
  * 1.4.5: When using a manual flush, only a specified list of universes can be flushed (Thanks to CrazyIvan359! See #22 for more information)

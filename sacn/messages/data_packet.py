@@ -15,7 +15,7 @@ from sacn.messages.root_layer import VECTOR_DMP_SET_PROPERTY, \
 class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
                  sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
-                 forceSync: bool = False, sync_universe: int = 0):
+                 forceSync: bool = False, sync_universe: int = 0, dmxStartCode: int = 0x00):
         self._vector1 = VECTOR_E131_DATA_PACKET
         self._vector2 = VECTOR_DMP_SET_PROPERTY
         self.sourceName: str = sourceName
@@ -26,6 +26,7 @@ class DataPacket(RootLayer):
         self.option_PreviewData: bool = previewData
         self.option_ForceSync: bool = forceSync
         self.sequence = sequence
+        self._dmxStartCode = dmxStartCode
         self.dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
@@ -72,6 +73,18 @@ class DataPacket(RootLayer):
         self._sequence += 1
         if self._sequence > 0xFF:
             self._sequence = 0
+
+    @property
+    def dmxStartCode(self) -> int:
+        return self._dmxStartCode
+    @dmxStartCode.setter
+    def dmxStartCode(self, dmxStartCode: int):
+        """
+        DMX start code values: 0x00 for level data; 0xDD for per address priority data
+        """
+        if dmxStartCode not in range(0, 256):
+            raise TypeError(f'dmx start code is a byte! values: [0-255]! value was {sequence}')
+        self._dmxStartCode = dmxStartCode
 
     @property
     def dmxData(self) -> tuple:
@@ -128,7 +141,7 @@ class DataPacket(RootLayer):
         lengthDmxData = len(self._dmxData)+1
         rtrnList.extend(int_to_bytes(lengthDmxData))
         # DMX data:-----------------------------
-        rtrnList.append(0x00)  # DMX Start Code
+        rtrnList.append(self._dmxStartCode)  # DMX Start Code
         rtrnList.extend(self._dmxData)
 
         return tuple(rtrnList)
