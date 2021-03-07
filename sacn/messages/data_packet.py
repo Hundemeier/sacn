@@ -83,7 +83,7 @@ class DataPacket(RootLayer):
         DMX start code values: 0x00 for level data; 0xDD for per address priority data
         """
         if dmxStartCode not in range(0, 256):
-            raise TypeError(f'dmx start code is a byte! values: [0-255]! value was {sequence}')
+            raise TypeError(f'dmx start code is a byte! values: [0-255]! value was {dmxStartCode}')
         self._dmxStartCode = dmxStartCode
 
     @property
