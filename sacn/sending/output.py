@@ -3,6 +3,7 @@
 from sacn.messages.data_packet import DataPacket
 from copy import deepcopy
 
+
 class Output:
     """
     This class is a compact representation of a universe's status with all relevant information
@@ -57,7 +58,8 @@ class Output:
     def per_address_priority(self, per_address_priority: bool):
         self._per_address_priority = per_address_priority
         if self._per_address_priority:
-            self._priority_packet.dmxData = ((self._level_packet.priority,) * 512) # default to full universe at packet priority
+            # default to full universe at packet priority
+            self._priority_packet.dmxData = ((self._level_packet.priority,) * 512)
         self._per_address_priority_changed = True
 
     @property

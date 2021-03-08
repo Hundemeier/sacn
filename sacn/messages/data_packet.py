@@ -95,6 +95,7 @@ class DataPacket(RootLayer):
     @property
     def dmxData(self) -> tuple:
         return self._dmxData
+
     @dmxData.setter
     def dmxData(self, data: tuple):
         """

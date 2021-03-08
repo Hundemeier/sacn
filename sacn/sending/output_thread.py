@@ -60,8 +60,8 @@ class OutputThread(threading.Thread):
             time_stamp = time.time()
 
             # send out universe discovery packets if necessary
-            if abs(time.time() - last_time_uni_discover) > E131_E131_UNIVERSE_DISCOVERY_INTERVAL \
-                    and self.universeDiscovery:                                                   # TODO: swap bool first for short circuit execution
+            if (abs(time.time() - last_time_uni_discover) > E131_E131_UNIVERSE_DISCOVERY_INTERVAL
+               and self.universeDiscovery):    # TODO: swap bool first for short circuit execution
                 self.send_uni_discover_packets()
                 last_time_uni_discover = time.time()
 
@@ -80,7 +80,8 @@ class OutputThread(threading.Thread):
              # only send if the manual flush feature is disabled
              # send out when the 1 second interval is over
              if not self.manual_flush and
-             (abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL or output._changed)]   # TODO: swap bool first for short circuit execution
+               (abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL
+                or output._changed)]   # TODO: swap bool first for short circuit execution
 
             time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
             if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
@@ -105,7 +106,6 @@ class OutputThread(threading.Thread):
         output._level_packet.sequence_increase()
         # the changed flag is not necessary any more
         output._changed = False
-
 
     def send_priority(self, output: Output):
         # 1st: Destination (check if multicast)
