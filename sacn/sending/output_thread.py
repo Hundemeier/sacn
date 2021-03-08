@@ -82,7 +82,7 @@ class OutputThread(threading.Thread):
              # send out when the 1 second interval is over
              if not self.manual_flush and
               (abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL
-               or output._changed)]   # TODO: swap bool first for short circuit execution
+              or output._changed)]   # TODO: swap bool first for short circuit execution
 
             time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
             if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
