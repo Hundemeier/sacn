@@ -21,6 +21,7 @@ SEND_OUT_INTERVAL = SEND_OUT_INTERVAL * INTERVAL_CORRECTION_FACTOR
 E131_E131_UNIVERSE_DISCOVERY_INTERVAL = E131_E131_UNIVERSE_DISCOVERY_INTERVAL * INTERVAL_CORRECTION_FACTOR
 PER_ADDRESS_PRIORITY_INTERVAL = PER_ADDRESS_PRIORITY_INTERVAL * INTERVAL_CORRECTION_FACTOR
 
+
 class OutputThread(threading.Thread):
     def __init__(self, cid: tuple, source_name: str, outputs: dict, bind_address,
                  bind_port: int = DEFAULT_PORT, fps: int = 30, universe_discovery: bool = True):
@@ -80,8 +81,8 @@ class OutputThread(threading.Thread):
              # only send if the manual flush feature is disabled
              # send out when the 1 second interval is over
              if not self.manual_flush and
-               (abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL
-                or output._changed)]   # TODO: swap bool first for short circuit execution
+              (abs(time.time() - output._last_time_send) > SEND_OUT_INTERVAL
+               or output._changed)]   # TODO: swap bool first for short circuit execution
 
             time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
             if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
