@@ -26,7 +26,7 @@ For more information on pip installation see: https://packaging.python.org/tutor
 ### Sending
 You can create a new `sACNsender` object and provide the necessary information. Then you have to use `start()`.
 This creates a new thread that is responsible for sending out the data. Do not forget to `stop()` the thread when
-finished! If the data is not changed, the same DMX data is send out every second.
+finished! If the data is not changed, the same DMX data is sent out every second.
 
 The thread sends out the data every *1/fps* seconds. This reduces network traffic even if you give the sender new data
 more often than the *fps*.
@@ -195,10 +195,13 @@ The DataPacket provides following attributes:
  order of arriving packets.
  * `option_StreamTerminated: bool`: True if this packet is the last one of the stream for the given universe.
  * `option_PreviewData: bool`: True if this data is for visualization purposes.
+ * `option_ForceSync: bool`: True if this should only function in a synchronized state.
+ * `dmxStartCode: int`: the start code for the data tuple. [1-255] Default: 0x00 for streaming level data.
  * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
  Filled with 0 for empty spaces.
 
 ### Changelog
+ * 1.5.1: Touchup data_packet constructor and formatting while adding dmxStartCode property
  * 1.5: Performance improvement: Deleted debugging statements in hot path of packet sending and receiving (Thanks to shauneccles! See #25 for more information)
  * 1.4.6: Fix: When creating a DataPacket with invalid DMX start codes (i.e. not `0x00`) an exception is thrown (Thanks to niggiover9000! See #11 for more information)
  * 1.4.5: When using a manual flush, only a specified list of universes can be flushed (Thanks to CrazyIvan359! See #22 for more information)
