@@ -25,7 +25,7 @@ class sACNreceiver:
         self._bindAddress = bind_address
         self._thread = None
         self._callbacks = {'availability': [],
-                           'universe': []} # init with empty list, because otherwise an error gets thrown
+                           'universe': []}  # init with empty list, because otherwise an error gets thrown
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         try:
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -48,7 +48,7 @@ class sACNreceiver:
         """
         Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
         To get a list with all valid triggers, use LISTEN_ON_OPTIONS.
-        :param trigger: the trigger on which the given callback should be used. 
+        :param trigger: the trigger on which the given callback should be used.
         Currently supported: 'universe availability change', 'universe'
         :param func: the callback. The parameters depend on the trigger. See README for more information
         """

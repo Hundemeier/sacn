@@ -24,6 +24,7 @@ class Output:
     @property
     def dmx_data(self) -> tuple:
         return self._level_packet.dmxData
+
     @dmx_data.setter
     def dmx_data(self, dmx_data: tuple):
         self._level_packet.dmxData = dmx_data
@@ -32,6 +33,7 @@ class Output:
     @property
     def per_address_priority_data(self) -> tuple:
         return self._priority_packet.dmxData
+
     @per_address_priority_data.setter
     def per_address_priority_data(self, priority_data: tuple):
         self._priority_packet.dmxData = priority_data
@@ -42,6 +44,7 @@ class Output:
     @property
     def per_address_priority_changed(self) -> bool:
         return self._per_address_priority_changed
+
     @per_address_priority_changed.setter
     def per_address_priority_changed(self, per_address_priority_changed):
         self._per_address_priority_changed = per_address_priority_changed
@@ -49,6 +52,7 @@ class Output:
     @property
     def per_address_priority(self) -> bool:
         return self._per_address_priority
+
     @per_address_priority.setter
     def per_address_priority(self, per_address_priority: bool):
         self._per_address_priority = per_address_priority
@@ -59,6 +63,7 @@ class Output:
     @property
     def priority(self) -> int:
         return self._level_packet.priority
+
     @priority.setter
     def priority(self, priority: int):
         # if using per_address_priority and current priority packet content matches full universe at old priority (default)
@@ -71,6 +76,7 @@ class Output:
     @property
     def preview_data(self) -> bool:
         return self._level_packet.option_PreviewData
+
     @preview_data.setter
     def preview_data(self, preview_data: bool):
         self._level_packet.option_PreviewData = preview_data
@@ -79,7 +85,7 @@ class Output:
     @property
     def last_priority_time(self) -> int:
         return self._last_priority_time
+
     @last_priority_time.setter
     def last_priority_time(self, last_priority_time: float):
         self._last_priority_time = last_priority_time
-

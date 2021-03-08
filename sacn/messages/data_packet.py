@@ -37,6 +37,7 @@ class DataPacket(RootLayer):
     @property
     def priority(self) -> int:
         return self._priority
+
     @priority.setter
     def priority(self, priority: int):
         if priority not in range(0, 201):
@@ -46,6 +47,7 @@ class DataPacket(RootLayer):
     @property
     def universe(self) -> int:
         return self._universe
+
     @universe.setter
     def universe(self, universe: int):
         if universe not in range(1, 64000):
@@ -55,6 +57,7 @@ class DataPacket(RootLayer):
     @property
     def syncAddr(self) -> int:
         return self._syncAddr
+
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
         if sync_universe not in range(0, 64000):
@@ -64,11 +67,13 @@ class DataPacket(RootLayer):
     @property
     def sequence(self) -> int:
         return self._sequence
+
     @sequence.setter
     def sequence(self, sequence: int):
         if sequence not in range(0, 256):
             raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
+
     def sequence_increase(self):
         self._sequence += 1
         if self._sequence > 0xFF:
@@ -77,6 +82,7 @@ class DataPacket(RootLayer):
     @property
     def dmxStartCode(self) -> int:
         return self._dmxStartCode
+
     @dmxStartCode.setter
     def dmxStartCode(self, dmxStartCode: int):
         """

@@ -19,6 +19,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @property
     def page(self) -> int:
         return self._page
+
     @page.setter
     def page(self, page: int):
         if page not in range(0, 256):
@@ -28,6 +29,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @property
     def lastPage(self) -> int:
         return self._page
+
     @lastPage.setter
     def lastPage(self, lastPage: int):
         if lastPage not in range(0, 256):
@@ -37,6 +39,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @property
     def universes(self) -> tuple:
         return tuple(self._universes)
+
     @universes.setter
     def universes(self, universes: tuple):
         if len(universes) > 512:
@@ -110,7 +113,7 @@ class UniverseDiscoveryPacket(RootLayer):
         :return: a list full of universe discovery packets
         """
         tmpList = []
-        if len(universes)%512 != 0:
+        if len(universes) % 512 != 0:
             num_of_packets = int(len(universes)/512)+1
         else:  # just get how long the list has to be. Just read and think about the if statement.
             # Should be self-explaining
@@ -135,7 +138,7 @@ def convert_raw_data_to_universes(raw_data) -> tuple:
     :param raw_data: the raw data to convert
     :return: tuple full with 16-bit numbers
     """
-    if len(raw_data)%2 != 0:
+    if len(raw_data) % 2 != 0:
         raise TypeError('The given data has not a length that is a multiple of 2!')
     rtrnList = []
     for i in range(0, len(raw_data), 2):

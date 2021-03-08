@@ -48,6 +48,7 @@ class RootLayer:
     @property
     def length(self) -> int:
         return self._length
+
     @length.setter
     def length(self, value: int):
         self._length = value & 0xFFF  # only use the least 12-Bit
