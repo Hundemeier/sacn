@@ -15,27 +15,29 @@ from sacn.messages.root_layer import VECTOR_DMP_SET_PROPERTY, \
 class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
                  sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
-                 forceSync: bool = False, sync_universe: int = 0):
+                 forceSync: bool = False, sync_universe: int = 0, dmxStartCode: int = 0x00):
         self._vector1 = VECTOR_E131_DATA_PACKET
         self._vector2 = VECTOR_DMP_SET_PROPERTY
         self.sourceName: str = sourceName
-        self.priority = priority
-        self.syncAddr = sync_universe
-        self.universe = universe
+        self._priority = priority
+        self._syncAddr = sync_universe
+        self._universe = universe
         self.option_StreamTerminated: bool = streamTerminated
         self.option_PreviewData: bool = previewData
         self.option_ForceSync: bool = forceSync
-        self.sequence = sequence
-        self.dmxData = dmxData
+        self._sequence = sequence
+        self._dmxStartCode = dmxStartCode
+        self._dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
-        return f'sACN DataPacket: Universe: {self.universe}, Priority: {self.priority}, Sequence: {self.sequence} ' \
-               f'CID: {self._cid}'
+        return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence} ' \
+               f'CID: {self.cid}'
 
     @property
     def priority(self) -> int:
         return self._priority
+
     @priority.setter
     def priority(self, priority: int):
         if priority not in range(0, 201):
@@ -45,6 +47,7 @@ class DataPacket(RootLayer):
     @property
     def universe(self) -> int:
         return self._universe
+
     @universe.setter
     def universe(self, universe: int):
         if universe not in range(1, 64000):
@@ -54,6 +57,7 @@ class DataPacket(RootLayer):
     @property
     def syncAddr(self) -> int:
         return self._syncAddr
+
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
         if sync_universe not in range(0, 64000):
@@ -63,19 +67,35 @@ class DataPacket(RootLayer):
     @property
     def sequence(self) -> int:
         return self._sequence
+
     @sequence.setter
     def sequence(self, sequence: int):
         if sequence not in range(0, 256):
             raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
+
     def sequence_increase(self):
         self._sequence += 1
         if self._sequence > 0xFF:
             self._sequence = 0
 
     @property
+    def dmxStartCode(self) -> int:
+        return self._dmxStartCode
+
+    @dmxStartCode.setter
+    def dmxStartCode(self, dmxStartCode: int):
+        """
+        DMX start code values: 0x00 for level data; 0xDD for per address priority data
+        """
+        if dmxStartCode not in range(0, 256):
+            raise TypeError(f'dmx start code is a byte! values: [0-255]! value was {dmxStartCode}')
+        self._dmxStartCode = dmxStartCode
+
+    @property
     def dmxData(self) -> tuple:
         return self._dmxData
+
     @dmxData.setter
     def dmxData(self, data: tuple):
         """
@@ -128,7 +148,7 @@ class DataPacket(RootLayer):
         lengthDmxData = len(self._dmxData)+1
         rtrnList.extend(int_to_bytes(lengthDmxData))
         # DMX data:-----------------------------
-        rtrnList.append(0x00)  # DMX Start Code
+        rtrnList.append(self._dmxStartCode)  # DMX Start Code
         rtrnList.extend(self._dmxData)
 
         return tuple(rtrnList)
