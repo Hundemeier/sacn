@@ -19,6 +19,7 @@ class Output:
     @property
     def dmx_data(self) -> tuple:
         return self._packet.dmxData
+
     @dmx_data.setter
     def dmx_data(self, dmx_data: tuple):
         self._packet.dmxData = dmx_data
@@ -27,6 +28,7 @@ class Output:
     @property
     def priority(self) -> int:
         return self._packet.priority
+
     @priority.setter
     def priority(self, priority: int):
         self._packet.priority = priority
@@ -34,7 +36,7 @@ class Output:
     @property
     def preview_data(self) -> bool:
         return self._packet.option_PreviewData
+
     @preview_data.setter
     def preview_data(self, preview_data: bool):
         self._packet.option_PreviewData = preview_data
-

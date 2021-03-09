@@ -79,6 +79,7 @@ class UniverseDiscoveryPacket(RootLayer):
         # universes:-----------------------------------------
         for universe in self._universes:  # universe is a 16-bit number!
             rtrnList.extend(int_to_bytes(universe))
+
         return tuple(rtrnList)
 
     @staticmethod
@@ -147,7 +148,7 @@ def convert_raw_data_to_universes(raw_data) -> tuple:
         raise TypeError('The given data does not have an even number of elements!')
     rtrnList = []
     for i in range(0, len(raw_data), 2):
-        rtrnList.append(two_bytes_to_int(raw_data[i], raw_data[i+1]))
+        rtrnList.append(two_bytes_to_int(raw_data[i], raw_data[i + 1]))
     return tuple(rtrnList)
 
 
@@ -158,4 +159,4 @@ def two_bytes_to_int(hi_byte: int, low_byte: int) -> int:
     :param low_byte: the low byte
     :return: converted integer that has a value between [0-65535]
     """
-    return ((hi_byte & 0xFF)*256) + (low_byte & 0xFF)
+    return ((hi_byte & 0xFF) * 256) + (low_byte & 0xFF)

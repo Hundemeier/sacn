@@ -12,6 +12,7 @@ from sacn.messages.root_layer import \
     int_to_bytes, \
     make_flagsandlength
 
+
 class SyncPacket(RootLayer):
     def __init__(self, cid: tuple, syncAddr: int, sequence: int = 0):
         self._cid = cid
