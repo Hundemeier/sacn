@@ -1,4 +1,5 @@
-# This file is under MIT license. The license file can be obtained in the root directory of this module.
+# This file is under MIT license. The license file can be obtained in the root
+# directory of this module.
 
 """
 This represents a root layer of an ACN Message.
@@ -37,9 +38,7 @@ class RootLayer:
         # first append the high byte from the Flags and Length
         # high 4 bit: 0x7 then the bits 8-11(indexes) from _length
         length = self.length - 16
-        tmpList.append((0x7 << 4) + (length >> 8))
-        # Then append the lower 8 bits from _length
-        tmpList.append(length & 0xFF)
+        tmpList.extend(make_flagsandlength(length))
 
         tmpList.extend(self._vector)
         tmpList.extend(self._cid)
@@ -48,6 +47,7 @@ class RootLayer:
     @property
     def length(self) -> int:
         return self._length
+
     @length.setter
     def length(self, value: int):
         self._length = value & 0xFFF  # only use the least 12-Bit
@@ -55,7 +55,8 @@ class RootLayer:
 
 def int_to_bytes(integer: int) -> list:
     """
-    Converts a single integer number to an list with the length 2 with highest byte first.
+    Converts a single integer number to an list with the length 2 with highest
+    byte first.
     The returned list contains values in the range [0-255]
     :param integer: the integer to convert
     :return: the list with the high byte first
@@ -65,7 +66,8 @@ def int_to_bytes(integer: int) -> list:
 
 def make_flagsandlength(length: int) -> list:
     """
-    Converts a length value in a Flags and Length list with two bytes in the correct order.
+    Converts a length value in a Flags and Length list with two bytes in the
+    correct order.
     :param length: the length to convert. should be 12-bit value
     :return: the list with the two bytes
     """
