@@ -48,6 +48,7 @@ class sACNsender:
     @property
     def universeDiscovery(self) -> bool:
         return self._universeDiscovery
+
     @universeDiscovery.setter
     def universeDiscovery(self, universeDiscovery: bool) -> None:
         self._universeDiscovery = universeDiscovery
@@ -59,6 +60,7 @@ class sACNsender:
     @property
     def manual_flush(self) -> bool:
         return self._output_thread.manual_flush
+
     @manual_flush.setter
     def manual_flush(self, manual_flush: bool) -> None:
         self._output_thread.manual_flush = manual_flush

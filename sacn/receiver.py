@@ -18,18 +18,18 @@ class sACNreceiver:
         :param bind_address: if you are on a Windows system and want to use multicast provide a valid interface
         IP-Address! Otherwise omit.
         :param bind_port: Default: 5568. It is not recommended to change this value!
-        Only use when you are know what you are doing!
+        Only use when you know what you are doing!
         """
         # If you bind to a specific interface on the Mac, no multicast data will arrive.
         # If you try to bind to all interfaces on Windows, no multicast data will arrive.
         self._bindAddress = bind_address
         self._thread = None
         self._callbacks = {'availability': [],
-                           'universe': []} # init with empty list, because otherwise an error gets thrown
+                           'universe': []}  # init with empty list, because otherwise an error gets thrown
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         try:
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        except:  # Not all systems support multiple sockets on the same port and interface
+        except socket.error:  # Not all systems support multiple sockets on the same port and interface
             pass
         self.sock.bind((bind_address, bind_port))
 
@@ -48,7 +48,7 @@ class sACNreceiver:
         """
         Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
         To get a list with all valid triggers, use LISTEN_ON_OPTIONS.
-        :param trigger: the trigger on which the given callback should be used. 
+        :param trigger: the trigger on which the given callback should be used.
         Currently supported: 'universe availability change', 'universe'
         :param func: the callback. The parameters depend on the trigger. See README for more information
         """
@@ -88,7 +88,7 @@ class sACNreceiver:
             self.sock.setsockopt(socket.SOL_IP, socket.IP_DROP_MEMBERSHIP,
                                  socket.inet_aton(calculate_multicast_addr(universe)) +
                                  socket.inet_aton(self._bindAddress))
-        except:  # try to leave the multicast group for the universe
+        except socket.error:  # try to leave the multicast group for the universe
             pass
 
     def start(self) -> None:
