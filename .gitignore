@@ -1,5 +1,6 @@
 sacn.egg-info/
 .*
+!.flake8
 !.github/
 !/.gitignore
 __pycache__/
