@@ -44,7 +44,6 @@ class UniverseDiscoveryPacket(RootLayer):
     @property
     def universes(self) -> tuple:
         return tuple(self._universes)
-
     @universes.setter
     def universes(self, universes: tuple):
         if len(universes) > 512:
@@ -148,7 +147,7 @@ def convert_raw_data_to_universes(raw_data) -> tuple:
         raise TypeError('The given data does not have an even number of elements!')
     rtrnList = []
     for i in range(0, len(raw_data), 2):
-        rtrnList.append(two_bytes_to_int(raw_data[i], raw_data[i + 1]))
+        rtrnList.append(two_bytes_to_int(raw_data[i], raw_data[i+1]))
     return tuple(rtrnList)
 
 
