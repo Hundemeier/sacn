@@ -43,7 +43,7 @@ def test_property_adjustment_and_deconstruction():
     built_packet.option_StreamTerminated = True
     built_packet.option_PreviewData = True
     built_packet.option_ForceSync = True
-    built_packet.syncAddr = 1003
+    built_packet.syncAddr = 34003
     built_packet.dmxStartCode = 8
     read_packet = DataPacket.make_data_packet(built_packet.getBytes())
     assert read_packet.cid == tuple(range(16))
@@ -55,7 +55,7 @@ def test_property_adjustment_and_deconstruction():
     assert read_packet.option_StreamTerminated is True
     assert read_packet.option_PreviewData is True
     assert read_packet.option_ForceSync is True
-    assert read_packet.syncAddr == 1003
+    assert read_packet.syncAddr == 34003
     assert read_packet.dmxStartCode == 8
 
 
@@ -67,3 +67,6 @@ def test_sequence_increment():
     built_packet.sequence = 78
     built_packet.sequence_increase
     assert built_packet.sequence != 79
+    built_packet.sequence = 255
+    built_packet.sequence_increase
+    assert built_packet.sequence != 0

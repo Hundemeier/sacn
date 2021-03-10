@@ -4,21 +4,32 @@
 This implements the sync packet from the E1.31 standard.
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
-from sacn.messages.root_layer import VECTOR_ROOT_E131_EXTENDED, \
+from sacn.messages.root_layer import \
+    VECTOR_ROOT_E131_EXTENDED, \
     VECTOR_E131_EXTENDED_SYNCHRONIZATION, \
     RootLayer, \
+    byte_tuple_to_int, \
     int_to_bytes, \
     make_flagsandlength
 
 class SyncPacket(RootLayer):
     def __init__(self, cid: tuple, syncAddr: int, sequence: int = 0):
-        self.syncAddr = syncAddr
-        self.sequence = sequence
+        self._cid = cid
+        self._syncAddr = syncAddr
+        self._sequence = sequence
         super().__init__(49, cid, VECTOR_ROOT_E131_EXTENDED)
+
+    @RootLayer.cid.setter
+    def cid(self, cid: tuple):
+        if (len(cid) != 16 or not all(isinstance(x, int) for x in cid) or not all(0 <= x <= 255 for x in cid)):
+            raise TypeError(f'cid must be a 16 byte tuple! value was {cid}')
+        super().__init__(49, cid, VECTOR_ROOT_E131_EXTENDED)
+        self._cid = cid
 
     @property
     def syncAddr(self) -> int:
         return self._syncAddr
+
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
         if sync_universe not in range(1, 64000):
@@ -28,11 +39,13 @@ class SyncPacket(RootLayer):
     @property
     def sequence(self) -> int:
         return self._sequence
+
     @sequence.setter
     def sequence(self, sequence: int):
         if sequence not in range(0, 256):
             raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
+
     def sequence_increase(self):
         self._sequence += 1
         if self._sequence > 0xFF:
@@ -62,6 +75,6 @@ class SyncPacket(RootLayer):
            tuple(raw_data[40:44]) != tuple(VECTOR_E131_EXTENDED_SYNCHRONIZATION):
             # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
-        tmpPacket = SyncPacket(cid=raw_data[22:38], syncAddr=(0xFF * raw_data[45]) + raw_data[46])
+        tmpPacket = SyncPacket(cid=raw_data[22:38], syncAddr=byte_tuple_to_int(raw_data[45:47]))
         tmpPacket.sequence = raw_data[44]
         return tmpPacket
