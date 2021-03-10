@@ -1,6 +1,8 @@
 # This file is under MIT license. The license file can be obtained in the root
 # directory of this module.
 
+import struct
+
 """
 This represents a root layer of an ACN Message.
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
@@ -53,7 +55,7 @@ class RootLayer:
         self._length = value & 0xFFF  # only use the least 12-Bit
 
 
-def int_to_bytes(integer: int) -> list:
+def int_to_bytes(integer_value: int) -> list:
     """
     Converts a single integer number to an list with the length 2 with highest
     byte first.
@@ -61,7 +63,21 @@ def int_to_bytes(integer: int) -> list:
     :param integer: the integer to convert
     :return: the list with the high byte first
     """
-    return [(integer >> 8) & 0xFF, integer & 0xFF]
+    if not (isinstance(integer_value, int) and 0 <= integer_value <= 65535):
+        raise TypeError(f'integer_value to be packed must be unsigned short: [0-65535]! value was {integer_value}')
+    return list(struct.pack('!H', integer_value))
+    #return [(integer >> 8) & 0xFF, integer & 0xFF]
+
+
+def byte_tuple_to_int(in_tuple: tuple) -> int:
+    """
+    Converts two element byte tuple (highest first) to integer.
+    :param in_tuple: the integer to convert
+    :return: the integer value
+    """
+    if((len(in_tuple) != 2) or not all(isinstance(x, int) for x in in_tuple) or not all(0 <= x <= 255 for x in in_tuple)):
+        raise ValueError(f'in_tuple must be a two byte tuple! value was {in_tuple}')
+    return struct.unpack('!H', bytes(in_tuple))[0]
 
 
 def make_flagsandlength(length: int) -> list:

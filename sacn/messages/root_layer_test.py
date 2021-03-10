@@ -3,6 +3,7 @@
 
 import pytest
 from sacn.messages.root_layer import \
+    byte_tuple_to_int, \
     int_to_bytes, \
     make_flagsandlength, \
     RootLayer
@@ -11,13 +12,13 @@ from sacn.messages.root_layer import \
 def test_int_to_bytes():
     assert int_to_bytes(0xFFFF) == [0xFF, 0xFF]
     assert int_to_bytes(0x1234) == [0x12, 0x34]
-    assert int_to_bytes(0x123456) == [0x34, 0x56]
+    assert int_to_bytes(0x3456) == [0x34, 0x56]
     assert int_to_bytes(0x0001) == [0x00, 0x01]
 
 
 def test_make_flagsandlength():
     assert make_flagsandlength(0x123) == [0x71, 0x23]
-    assert make_flagsandlength(0x1234) == [0x72, 0x34]
+    assert make_flagsandlength(0x234) == [0x72, 0x34]
     assert make_flagsandlength(0x001) == [0x70, 0x01]
 
 
@@ -43,3 +44,12 @@ def test_root_layer_bytes():
     # cid
     shouldBe.extend(cid)
     assert packet.getBytes() == shouldBe
+
+
+def test_int_byte_transitions():
+    failedNums = []
+    for input_i in range(64000):
+        converted_i = byte_tuple_to_int(tuple(int_to_bytes(input_i)))
+        if input_i != converted_i:
+            failedNums.append(f'{input_i} != {converted_i}')
+    assert [] == failedNums
