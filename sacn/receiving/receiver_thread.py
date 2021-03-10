@@ -34,7 +34,7 @@ class receiverThread(threading.Thread):
         super().__init__(name='sACN input/receiver thread')
 
     def run(self):
-        self.logger.info(f'Started new sACN receiver thread')
+        self.logger.info('Started new sACN receiver thread')
         self.socket.settimeout(0.1)  # timeout as 100ms
         self.enabled_flag = True
         while self.enabled_flag:
@@ -94,7 +94,7 @@ class receiverThread(threading.Thread):
         try:
             del self.lastSequence[universe]
         except Exception:
-            pass # sometimes an error occurs here TODO: check why here comes an error
+            pass  # sometimes an error occurs here TODO: check why here comes an error
 
     def refresh_priorities(self, packet: DataPacket) -> None:
         # check the priority and refresh the priorities dict

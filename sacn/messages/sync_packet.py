@@ -10,6 +10,7 @@ from sacn.messages.root_layer import VECTOR_ROOT_E131_EXTENDED, \
     int_to_bytes, \
     make_flagsandlength
 
+
 class SyncPacket(RootLayer):
     def __init__(self, cid: tuple, syncAddr: int, sequence: int = 0):
         self.syncAddr = syncAddr
@@ -19,6 +20,7 @@ class SyncPacket(RootLayer):
     @property
     def syncAddr(self) -> int:
         return self._syncAddr
+
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
         if sync_universe not in range(1, 64000):
@@ -28,11 +30,13 @@ class SyncPacket(RootLayer):
     @property
     def sequence(self) -> int:
         return self._sequence
+
     @sequence.setter
     def sequence(self, sequence: int):
         if sequence not in range(0, 256):
             raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
+
     def sequence_increase(self):
         self._sequence += 1
         if self._sequence > 0xFF:
