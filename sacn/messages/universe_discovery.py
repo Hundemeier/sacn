@@ -44,6 +44,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @property
     def universes(self) -> tuple:
         return tuple(self._universes)
+
     @universes.setter
     def universes(self, universes: tuple):
         if len(universes) > 512:
