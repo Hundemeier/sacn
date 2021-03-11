@@ -70,7 +70,6 @@ class RootLayer:
         return self.__dict__ == other.__dict__
 
 
-
 def int_to_bytes(integer_value: int) -> list:
     """
     Converts a single integer number to an list with the length 2 with highest
