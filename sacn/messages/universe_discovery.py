@@ -8,7 +8,6 @@ from sacn.messages.root_layer import \
     VECTOR_E131_EXTENDED_DISCOVERY, \
     VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST,\
     RootLayer, \
-    byte_tuple_to_int, \
     int_to_bytes, \
     make_flagsandlength
 

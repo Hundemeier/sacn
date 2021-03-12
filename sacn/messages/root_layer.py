@@ -1,5 +1,4 @@
-# This file is under MIT license. The license file can be obtained in the root
-# directory of this module.
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 
 """
@@ -60,7 +59,7 @@ class RootLayer:
     @cid.setter
     def cid(self, cid: tuple):
         if (len(cid) != 16 or not all(isinstance(x, int) for x in cid) or not all(0 <= x <= 255 for x in cid)):
-            raise TypeError(f'cid must be a 16 byte tuple! value was {cid}')
+            raise ValueError(f'cid must be a 16 byte tuple! value was {cid}')
         # derived classes must override this to init with appropriate length
         self._cid = cid
 

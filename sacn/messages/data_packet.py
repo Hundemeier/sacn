@@ -179,7 +179,7 @@ class DataPacket(RootLayer):
            raw_data[117] != VECTOR_DMP_SET_PROPERTY:  # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
 
-        tmpPacket = DataPacket(cid=raw_data[22:38], sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
+        tmpPacket = DataPacket(cid=tuple(raw_data[22:38]), sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
                                universe=byte_tuple_to_int(raw_data[113:115]))  # high byte first
         tmpPacket.priority = raw_data[108]
         tmpPacket.syncAddr = byte_tuple_to_int(raw_data[109:111])

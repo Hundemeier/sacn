@@ -1,5 +1,4 @@
-# This file is under MIT license. The license file can be obtained in the root
-# directory of this module.
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import pytest
 from sacn.messages.root_layer import \
@@ -23,6 +22,24 @@ def test_make_flagsandlength():
     with pytest.raises(ValueError):
         assert make_flagsandlength(0x1234) == [0x72, 0x34]
     assert make_flagsandlength(0x001) == [0x70, 0x01]
+
+
+def test_cid():
+    cid1 = tuple(range(0, 16))
+    cid2 = tuple(range(1, 17))
+    vector = (1, 2, 3, 4)
+    packet = RootLayer(123, cid1, vector)
+    assert packet.cid == cid1
+    packet.cid = cid2
+    assert packet.cid == cid2
+    # test that CID can not be shorter or longer than 16
+    with pytest.raises(ValueError):
+        packet.cid = tuple(range(0, 17))
+    with pytest.raises(ValueError):
+        packet.cid = tuple(range(0, 15))
+    # test that a CID can only contain valid byte values
+    with pytest.raises(ValueError):
+        packet.cid = tuple(range(250, 266))
 
 
 def test_root_layer_bytes():
