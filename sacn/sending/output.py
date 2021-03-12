@@ -84,10 +84,3 @@ class Output:
         self._level_packet.option_PreviewData = preview_data
         self._priority_packet.option_PreviewData = preview_data
 
-    @property
-    def last_priority_time(self) -> int:
-        return self._last_priority_time
-
-    @last_priority_time.setter
-    def last_priority_time(self, last_priority_time: float):
-        self._last_priority_time = last_priority_time

@@ -19,20 +19,20 @@ class DataPacket(RootLayer):
         self._vector1 = VECTOR_E131_DATA_PACKET
         self._vector2 = VECTOR_DMP_SET_PROPERTY
         self.sourceName: str = sourceName
-        self.priority = priority
-        self.syncAddr = sync_universe
-        self.universe = universe
+        self._priority = priority
+        self._syncAddr = sync_universe
+        self._universe = universe
         self.option_StreamTerminated: bool = streamTerminated
         self.option_PreviewData: bool = previewData
         self.option_ForceSync: bool = forceSync
-        self.sequence = sequence
+        self._sequence = sequence
         self._dmxStartCode = dmxStartCode
-        self.dmxData = dmxData
+        self._dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
-        return f'sACN DataPacket: Universe: {self.universe}, Priority: {self.priority}, Sequence: {self.sequence} ' \
-               f'CID: {self._cid}'
+        return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence} ' \
+               f'CID: {self.cid}'
 
     @property
     def priority(self) -> int:
