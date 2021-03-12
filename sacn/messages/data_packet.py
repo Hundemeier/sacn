@@ -36,13 +36,6 @@ class DataPacket(RootLayer):
         return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence} ' \
                f'CID: {self._cid}'
 
-    @RootLayer.cid.setter
-    def cid(self, cid: tuple):
-        if (len(cid) != 16 or not all(isinstance(x, int) for x in cid) or not all(0 <= x <= 255 for x in cid)):
-            raise TypeError(f'cid must be a 16 byte tuple! value was {cid}')
-        super().__init__(126 + len(self._dmxData), cid, VECTOR_ROOT_E131_DATA)
-        self._cid = cid
-
     @property
     def priority(self) -> int:
         return self._priority
