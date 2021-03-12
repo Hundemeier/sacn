@@ -3,9 +3,14 @@ This class represents an universe discovery packet of the E1.31 Standard.
 """
 from typing import List
 
-from sacn.messages.root_layer import RootLayer, VECTOR_ROOT_E131_EXTENDED, \
-    VECTOR_E131_EXTENDED_DISCOVERY, VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST,\
-    make_flagsandlength, int_to_bytes
+from sacn.messages.root_layer import \
+    VECTOR_ROOT_E131_EXTENDED, \
+    VECTOR_E131_EXTENDED_DISCOVERY, \
+    VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST,\
+    RootLayer, \
+    byte_tuple_to_int, \
+    int_to_bytes, \
+    make_flagsandlength
 
 
 class UniverseDiscoveryPacket(RootLayer):
@@ -14,7 +19,7 @@ class UniverseDiscoveryPacket(RootLayer):
         self._page: int = page
         self._lastPage: int = lastPage
         self._universes: list = universes
-        super().__init__((len(universes)*2)+120, cid, VECTOR_ROOT_E131_EXTENDED)
+        super().__init__((len(universes) * 2) + 120, cid, VECTOR_ROOT_E131_EXTENDED)
 
     @property
     def page(self) -> int:
@@ -46,7 +51,7 @@ class UniverseDiscoveryPacket(RootLayer):
             raise TypeError(f'Universes is a tuple with a max length of 512! The data in the tuple has to be int! '
                             f'Length was {len(universes)}')
         self._universes = sorted(universes)
-        self.length = 121 + (len(universes)*2)  # generate new length value for the packet
+        self.length = 121 + (len(universes) * 2)  # generate new length value for the packet
 
     def getBytes(self) -> tuple:
         rtrnList = super().getBytes()
@@ -61,7 +66,7 @@ class UniverseDiscoveryPacket(RootLayer):
             tmpSourceName[i] = ord(self.sourceName[i])
         rtrnList.extend(tmpSourceName)
         # reserved fields:-----------------------------------
-        rtrnList.extend([0]*4)
+        rtrnList.extend([0] * 4)
         # Universe Discovery Layer:-------------------------------------
         # Flags and Length:----------------------------------
         rtrnList.extend(make_flagsandlength(self.length - 112))
@@ -96,10 +101,11 @@ class UniverseDiscoveryPacket(RootLayer):
         # remember: UDL has 8 bytes plus the universes
         # remember: Flags and length includes a 12-bit length field
         universes = convert_raw_data_to_universes(raw_data[120:120 + length])
-        tmp_packet = UniverseDiscoveryPacket(cid=raw_data[22:38], sourceName=str(raw_data[44:108]), universes=universes)
-        tmp_packet._page = raw_data[118]
-        tmp_packet._lastPage = raw_data[119]
-        return tmp_packet
+        tmpPacket = UniverseDiscoveryPacket(cid=raw_data[22:38], sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
+                                            universes=universes)
+        tmpPacket._page = raw_data[118]
+        tmpPacket._lastPage = raw_data[119]
+        return tmpPacket
 
     @staticmethod
     def make_multiple_uni_disc_packets(cid: tuple, sourceName: str, universes: list) -> List['UniverseDiscoveryPacket']:
@@ -127,7 +133,7 @@ class UniverseDiscoveryPacket(RootLayer):
                 tmpUniverses = universes[i * 512:(i + 1) * 512]
             # create new UniverseDiscoveryPacket and append it to the list. Page and lastPage are getting special values
             tmpList.append(UniverseDiscoveryPacket(cid=cid, sourceName=sourceName, universes=tmpUniverses,
-                                                   page=i, lastPage=num_of_packets-1))
+                                                   page=i, lastPage=num_of_packets - 1))
         return tmpList
 
 
@@ -139,7 +145,7 @@ def convert_raw_data_to_universes(raw_data) -> tuple:
     :return: tuple full with 16-bit numbers
     """
     if len(raw_data) % 2 != 0:
-        raise TypeError('The given data has not a length that is a multiple of 2!')
+        raise TypeError('The given data does not have an even number of elements!')
     rtrnList = []
     for i in range(0, len(raw_data), 2):
         rtrnList.append(two_bytes_to_int(raw_data[i], raw_data[i + 1]))

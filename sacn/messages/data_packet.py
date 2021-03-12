@@ -4,11 +4,14 @@
 This represents a framing layer and a DMP layer from the E1.31 Standard
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
-from sacn.messages.root_layer import VECTOR_DMP_SET_PROPERTY, \
+
+from sacn.messages.root_layer import \
+    VECTOR_DMP_SET_PROPERTY, \
     VECTOR_E131_DATA_PACKET, \
     VECTOR_ROOT_E131_DATA, \
     RootLayer, \
     int_to_bytes, \
+    byte_tuple_to_int, \
     make_flagsandlength
 
 
@@ -16,8 +19,7 @@ class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
                  sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
                  forceSync: bool = False, sync_universe: int = 0, dmxStartCode: int = 0x00):
-        self._vector1 = VECTOR_E131_DATA_PACKET
-        self._vector2 = VECTOR_DMP_SET_PROPERTY
+        self._cid = cid
         self.sourceName: str = sourceName
         self._priority = priority
         self._syncAddr = sync_universe
@@ -32,7 +34,14 @@ class DataPacket(RootLayer):
 
     def __str__(self):
         return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence} ' \
-               f'CID: {self.cid}'
+               f'CID: {self._cid}'
+
+    @RootLayer.cid.setter
+    def cid(self, cid: tuple):
+        if (len(cid) != 16 or not all(isinstance(x, int) for x in cid) or not all(0 <= x <= 255 for x in cid)):
+            raise TypeError(f'cid must be a 16 byte tuple! value was {cid}')
+        super().__init__(126 + len(self._dmxData), cid, VECTOR_ROOT_E131_DATA)
+        self._cid = cid
 
     @property
     def priority(self) -> int:
@@ -113,7 +122,7 @@ class DataPacket(RootLayer):
         # Flags and Length Framing Layer:-------
         rtrnList.extend(make_flagsandlength(self.length - 38))
         # Vector Framing Layer:-----------------
-        rtrnList.extend(self._vector1)
+        rtrnList.extend(VECTOR_E131_DATA_PACKET)
         # sourceName:---------------------------
         # make a 64 byte long sourceName
         tmpSourceName = [0] * 64
@@ -141,7 +150,7 @@ class DataPacket(RootLayer):
         # Flags and Length DMP Layer:-----------
         rtrnList.extend(make_flagsandlength(self.length - 115))
         # Vector DMP Layer:---------------------
-        rtrnList.append(self._vector2)
+        rtrnList.append(VECTOR_DMP_SET_PROPERTY)
         # Some static values (Address & Data Type, First Property addr, ...)
         rtrnList.extend([0xa1, 0x00, 0x00, 0x00, 0x01])
         # Length of the data:-------------------
@@ -150,7 +159,6 @@ class DataPacket(RootLayer):
         # DMX data:-----------------------------
         rtrnList.append(self._dmxStartCode)  # DMX Start Code
         rtrnList.extend(self._dmxData)
-
         return tuple(rtrnList)
 
     @staticmethod
@@ -170,17 +178,16 @@ class DataPacket(RootLayer):
            tuple(raw_data[40:44]) != tuple(VECTOR_E131_DATA_PACKET) or \
            raw_data[117] != VECTOR_DMP_SET_PROPERTY:  # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
-        if raw_data[125] != 0x00:
-            raise TypeError(f'{raw_data[125]} is not a default Null Start Code for Dimmers per DMX512 & DMX512/1990')
 
-        tmpPacket = DataPacket(cid=raw_data[22:38], sourceName=str(raw_data[44:108]),
-                               universe=(0xFF * raw_data[113]) + raw_data[114])  # high byte first
+        tmpPacket = DataPacket(cid=raw_data[22:38], sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
+                               universe=byte_tuple_to_int(raw_data[113:115]))  # high byte first
         tmpPacket.priority = raw_data[108]
-        tmpPacket.syncAddr = (0xFF * raw_data[109]) + raw_data[110]  # high byte first
+        tmpPacket.syncAddr = byte_tuple_to_int(raw_data[109:111])
         tmpPacket.sequence = raw_data[111]
         tmpPacket.option_PreviewData = bool(raw_data[112] & 0b10000000)  # use the 7th bit as preview_data
         tmpPacket.option_StreamTerminated = bool(raw_data[112] & 0b01000000)  # use bit 6 as stream terminated
         tmpPacket.option_ForceSync = bool(raw_data[112] & 0b00100000)  # use bit 5 as force sync
+        tmpPacket.dmxStartCode = raw_data[125]
         tmpPacket.dmxData = raw_data[126:638]
         return tmpPacket
 
