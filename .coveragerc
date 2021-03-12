@@ -1,0 +1,10 @@
+# .coveragerc to control coverage.py
+[run]
+omit =
+    # omit any test files
+    *_test.py
+    test_*.py
+
+include =
+    # only include source files from this project
+    sacn/*

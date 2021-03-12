@@ -1,6 +1,7 @@
 sacn.egg-info/
 .*
 !.flake8
+!.coveragerc
 !.github/
 !/.gitignore
 __pycache__/
@@ -9,3 +10,4 @@ testing2.py
 setup.cfg
 dist/
 build/
+htmlcov/
