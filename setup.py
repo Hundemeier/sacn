@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='sacn',
-    version='1.6.0',
+    version='1.6.1',
     description='sACN / E1.31 module for easy handling of DMX data over ethernet',
     long_description=long_description,
     long_description_content_type="text/markdown",
