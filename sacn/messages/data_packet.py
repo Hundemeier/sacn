@@ -110,7 +110,7 @@ class DataPacket(RootLayer):
         # in theory this class supports dynamic length, so the next line is correcting the length
         self.length = 126 + len(self._dmxData)
 
-    def getBytes(self) -> tuple:
+    def getBytes(self) -> list:
         rtrnList = super().getBytes()
         # Flags and Length Framing Layer:-------
         rtrnList.extend(make_flagsandlength(self.length - 38))

@@ -15,13 +15,9 @@ def test_constructor():
     assert packet.cid == cid
     assert packet.syncAddr == syncAddr
     assert packet.sequence == sequence
-    # using wrong values
+    # using wrong values for CID
     with pytest.raises(ValueError):
         SyncPacket(tuple(range(0, 17)), syncAddr, sequence)
-    with pytest.raises(ValueError):
-        SyncPacket(cid, -1, sequence)
-    with pytest.raises(ValueError):
-        SyncPacket(cid, syncAddr, -1)
 
 
 def test_sync_universe():

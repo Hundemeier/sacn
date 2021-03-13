@@ -44,7 +44,7 @@ class SyncPacket(RootLayer):
         if self._sequence > 0xFF:
             self._sequence = 0
 
-    def getBytes(self) -> tuple:
+    def getBytes(self) -> list:
         rtrnList = super().getBytes()
         rtrnList.extend(make_flagsandlength(self.length - 38))
         rtrnList.extend(VECTOR_E131_EXTENDED_SYNCHRONIZATION)
