@@ -12,9 +12,38 @@ def test_int_to_bytes():
     assert int_to_bytes(0xFFFF) == [0xFF, 0xFF]
     assert int_to_bytes(0x1234) == [0x12, 0x34]
     # test that the value cannot exceed two bytes
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         int_to_bytes(0x123456)
     assert int_to_bytes(0x0001) == [0x00, 0x01]
+
+
+def test_byte_tuple_to_int():
+    assert byte_tuple_to_int((0x00, 0x00)) == 0x0000
+    assert byte_tuple_to_int((0xFF, 0xFF)) == 0xFFFF
+    assert byte_tuple_to_int((0x12, 0x34)) == 0x1234
+    # test different length of tuples
+    with pytest.raises(ValueError):
+        byte_tuple_to_int(())
+    with pytest.raises(TypeError):
+        byte_tuple_to_int(1)
+    with pytest.raises(ValueError):
+        byte_tuple_to_int((1, 2, 3))
+    with pytest.raises(ValueError):
+        byte_tuple_to_int((1, "string"))
+    with pytest.raises(ValueError):
+        byte_tuple_to_int((1, 500))
+
+
+def test_eq():
+    cid = tuple(range(0, 16))
+    cid2 = tuple(range(1, 17))
+    vec = tuple(range(0, 4))
+    vec2 = tuple(range(1, 5))
+    assert RootLayer(0, cid, vec) == RootLayer(0, cid, vec)
+    assert RootLayer(0, cid, vec) != RootLayer(1, cid, vec)
+    assert RootLayer(0, cid, vec) != RootLayer(0, cid, vec2)
+    assert RootLayer(0, cid, vec) != RootLayer(0, cid2, vec)
+    assert (RootLayer(0, cid, vec) == (1, 2, 3)) is False
 
 
 def test_make_flagsandlength():

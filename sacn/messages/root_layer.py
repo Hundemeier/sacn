@@ -78,7 +78,7 @@ def int_to_bytes(integer_value: int) -> list:
     :return: the list with the high byte first
     """
     if not (isinstance(integer_value, int) and 0 <= integer_value <= 65535):
-        raise TypeError(f'integer_value to be packed must be unsigned short: [0-65535]! value was {integer_value}')
+        raise ValueError(f'integer_value to be packed must be unsigned short: [0-65535]! value was {integer_value}')
     return [(integer_value >> 8) & 0xFF, integer_value & 0xFF]
 
 
