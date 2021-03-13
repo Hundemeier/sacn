@@ -33,7 +33,7 @@ class DataPacket(RootLayer):
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
-        return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence} ' \
+        return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence}, ' \
                f'CID: {self._cid}'
 
     @property
@@ -43,7 +43,7 @@ class DataPacket(RootLayer):
     @priority.setter
     def priority(self, priority: int):
         if priority not in range(0, 201):
-            raise TypeError(f'priority must be in range [0-200]! value was {priority}')
+            raise ValueError(f'priority must be in range [0-200]! value was {priority}')
         self._priority = priority
 
     @property
@@ -53,7 +53,7 @@ class DataPacket(RootLayer):
     @universe.setter
     def universe(self, universe: int):
         if universe not in range(1, 64000):
-            raise TypeError(f'universe must be [1-63999]! value was {universe}')
+            raise ValueError(f'universe must be [1-63999]! value was {universe}')
         self._universe = universe
 
     @property
@@ -63,7 +63,7 @@ class DataPacket(RootLayer):
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
         if sync_universe not in range(0, 64000):
-            raise TypeError(f'sync_universe must be [1-63999]! value was {sync_universe}')
+            raise ValueError(f'sync_universe must be [1-63999]! value was {sync_universe}')
         self._syncAddr = sync_universe
 
     @property
@@ -73,7 +73,7 @@ class DataPacket(RootLayer):
     @sequence.setter
     def sequence(self, sequence: int):
         if sequence not in range(0, 256):
-            raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
+            raise ValueError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
 
     def sequence_increase(self):
@@ -91,7 +91,7 @@ class DataPacket(RootLayer):
         DMX start code values: 0x00 for level data; 0xDD for per address priority data
         """
         if dmxStartCode not in range(0, 256):
-            raise TypeError(f'dmx start code is a byte! values: [0-255]! value was {dmxStartCode}')
+            raise ValueError(f'dmx start code is a byte! values: [0-255]! value was {dmxStartCode}')
         self._dmxStartCode = dmxStartCode
 
     @property

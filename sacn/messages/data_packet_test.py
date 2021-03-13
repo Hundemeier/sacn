@@ -1,13 +1,20 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
+import pytest
 from sacn.messages.data_packet import \
     calculate_multicast_addr, \
     DataPacket
 
 
 def test_calculate_multicast_addr():
-    assert calculate_multicast_addr(1) == "239.255.0.1"
-    assert calculate_multicast_addr(63999) == "239.255.249.255"
+    universe_1 = "239.255.0.1"
+    universe_63999 = "239.255.249.255"
+    assert calculate_multicast_addr(1) == universe_1
+    assert calculate_multicast_addr(63999) == universe_63999
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    assert packet.calculate_multicast_addr() == universe_1
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=63999)
+    assert packet.calculate_multicast_addr() == universe_63999
 
 
 def test_byte_string_construction_and_deconstruction():
@@ -142,3 +149,61 @@ def test_parse_data_packet():
     assert packet.universe == 1
     assert packet.dmxStartCode == 0
     assert packet.dmxData == tuple(dmx_data)
+
+    # test for invalid data
+    # test for too short data arrays
+    for i in range(1, 126):
+        with pytest.raises(TypeError):
+            DataPacket.make_data_packet([x % 256 for x in range(0, i)])
+    # test for invalid vectors
+    with pytest.raises(TypeError):
+        DataPacket.make_data_packet([x % 256 for x in range(0, 126)])
+
+
+def test_str():
+    packet = DataPacket(
+        cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
+        sourceName="Test",
+        universe=62000,
+        priority=195,
+        sequence=34)
+    assert packet.__str__() == "sACN DataPacket: Universe: 62000, Priority: 195, Sequence: 34, CID: (16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8)"
+
+
+def test_priority():
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    def property(i): packet.priority = i
+    property_number_range_check(0, 200, property)
+
+
+def test_universe():
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    def property(i): packet.universe = i
+    property_number_range_check(1, 63999, property)
+
+
+def test_sync_universe():
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    def property(i): packet.syncAddr = i
+    property_number_range_check(0, 63999, property)
+
+
+def test_sequence():
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    def property(i): packet.sequence = i
+    property_number_range_check(0, 255, property)
+
+
+def test_dmx_start_code():
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    def property(i): packet.dmxStartCode = i
+    property_number_range_check(0, 255, property)
+
+
+def property_number_range_check(lower_bound: int, upper_bound: int, function):
+    for i in range(lower_bound, upper_bound + 1):
+        function(i)
+    with pytest.raises(ValueError):
+        function(lower_bound - 1)
+    with pytest.raises(ValueError):
+        function(upper_bound + 1)
