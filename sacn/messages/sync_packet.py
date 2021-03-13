@@ -15,17 +15,9 @@ from sacn.messages.root_layer import \
 
 class SyncPacket(RootLayer):
     def __init__(self, cid: tuple, syncAddr: int, sequence: int = 0):
-        self._cid = cid
         self._syncAddr = syncAddr
         self._sequence = sequence
         super().__init__(49, cid, VECTOR_ROOT_E131_EXTENDED)
-
-    @RootLayer.cid.setter
-    def cid(self, cid: tuple):
-        if (len(cid) != 16 or not all(isinstance(x, int) for x in cid) or not all(0 <= x <= 255 for x in cid)):
-            raise TypeError(f'cid must be a 16 byte tuple! value was {cid}')
-        super().__init__(49, cid, VECTOR_ROOT_E131_EXTENDED)
-        self._cid = cid
 
     @property
     def syncAddr(self) -> int:
