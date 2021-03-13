@@ -54,7 +54,7 @@ class sACNsender:
         self._universeDiscovery = universeDiscovery
         try:  # try to set the value for the output thread
             self._output_thread.universeDiscovery = universeDiscovery
-        except:
+        except AttributeError:
             pass
 
     @property
@@ -104,13 +104,13 @@ class sACNsender:
         check_universe(universe)
         try:  # try to send out three messages with stream_termination bit set to 1
             self._outputs[universe]._packet.option_StreamTerminated = True
-            for i in range(0, 3):
+            for _ in range(0, 3):
                 self._output_thread.send_out(self._outputs[universe])
-        except:
+        except (KeyError, AttributeError):
             pass
         try:
             del self._outputs[universe]
-        except:
+        except KeyError:
             pass
 
     def get_active_outputs(self) -> tuple:
@@ -139,7 +139,7 @@ class sACNsender:
     def __getitem__(self, item: int) -> Output:
         try:
             return self._outputs[item]
-        except:
+        except KeyError:
             return None
 
     def start(self, bind_address=None, bind_port: int = None, fps: int = None) -> None:
@@ -169,7 +169,7 @@ class sACNsender:
         """
         try:
             self._output_thread.enabled_flag = False
-        except:
+        except AttributeError:
             pass
 
     def __del__(self):

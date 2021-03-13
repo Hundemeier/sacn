@@ -38,14 +38,15 @@ class OutputThread(threading.Thread):
                                      socket.SOCK_DGRAM)  # UDP
         try:
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        except:  # Not all systems support multiple sockets on the same port and interface
+        except:  # noqa: E722 Not all systems support multiple sockets on the same port and interface
             pass
 
         try:
             self._socket.bind((self._bindAddress, self._bind_port))
             self.logger.info(f'Bind sender thread to IP:{self._bindAddress} Port:{self._bind_port}')
-        except:
+        except socket.error:
             self.logger.exception(f'Could not bind to IP:{self._bindAddress} Port:{self._bind_port}')
+            raise
 
         last_time_uni_discover = 0
         self.enabled_flag = True

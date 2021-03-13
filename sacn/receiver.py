@@ -54,13 +54,14 @@ class sACNreceiver:
         """
         if trigger in LISTEN_ON_OPTIONS:
             if trigger == LISTEN_ON_OPTIONS[1]:  # if the trigger is universe, use the universe from args as key
+                universe = kwargs[LISTEN_ON_OPTIONS[1]]
                 try:
-                    self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]].append(func)
-                except:
-                    self._callbacks[kwargs[LISTEN_ON_OPTIONS[1]]] = [func]
+                    self._callbacks[universe].append(func)
+                except KeyError:
+                    self._callbacks[universe] = [func]
             try:
                 self._callbacks[trigger].append(func)
-            except:
+            except KeyError:
                 self._callbacks[trigger] = [func]
         else:
             raise TypeError(f'The given trigger "{trigger}" is not a valid one!')
@@ -105,7 +106,7 @@ class sACNreceiver:
         """
         try:
             self._thread.enabled_flag = False
-        except:  # try to stop the thread
+        except AttributeError:  # try to stop the thread
             pass
 
     def get_possible_universes(self) -> Tuple[int]:
