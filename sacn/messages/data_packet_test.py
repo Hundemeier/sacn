@@ -18,12 +18,12 @@ def test_calculate_multicast_addr():
     assert packet.calculate_multicast_addr() == universe_63999
 
 
-def test_byte_string_construction_and_deconstruction():
+def test_byte_construction_and_deconstruction():
     built_packet = DataPacket(
         cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
         sourceName="Test Name",
         universe=62000,
-        dmxData=((255,) + tuple(range(255)) + tuple(range(256, 0, -1))),
+        dmxData=tuple(x % 256 for x in range(0, 512)),
         priority=195,
         sequence=34,
         streamTerminated=True,
@@ -173,29 +173,70 @@ def test_str():
 
 def test_priority():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test property setter
     def property(i): packet.priority = i
-    property_number_range_check(0, 200, property)
+    # test constructor for the same parameter
+    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, priority=i)
+    property_number_range_check(0, 200, property, constructor)
 
 
 def test_universe():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test property setter
     def property(i): packet.universe = i
-    property_number_range_check(1, 63999, property)
+    # test constructor for the same parameter
+    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=i)
+    property_number_range_check(1, 63999, property, constructor)
 
 
 def test_sync_universe():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test property setter
     def property(i): packet.syncAddr = i
-    property_number_range_check(0, 63999, property)
+    # test constructor for the same parameter
+    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, sync_universe=i)
+    property_number_range_check(0, 63999, property, constructor)
 
 
 def test_sequence():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test property setter
     def property(i): packet.sequence = i
-    property_number_range_check(0, 255, property)
+    # test constructor for the same parameter
+    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, sequence=i)
+    property_number_range_check(0, 255, property, constructor)
 
 
 def test_dmx_start_code():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test property setter
     def property(i): packet.dmxStartCode = i
-    property_number_range_check(0, 255, property)
+    # test constructor for the same parameter
+    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxStartCode=i)
+    property_number_range_check(0, 255, property, constructor)
+
+
+def test_dmx_data():
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test valid lengths
+    for i in range(0, 512):
+        data = tuple(x % 256 for x in range(0, i))
+        # test property setter
+        packet.dmxData = data
+        assert len(packet.dmxData) == 512
+        assert packet.length == 638
+        # test constructor for the same parameter
+        DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
+
+    def execute_universes_expect(data: tuple):
+        with pytest.raises(ValueError):
+            packet.dmxData = data
+        with pytest.raises(ValueError):
+            DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
+
+    # test for non-int and out of range values values in tuple
+    execute_universes_expect(tuple("string"))
+    execute_universes_expect(tuple(range(255, 257)))
+
+    # test for tuple-length > 512
+    execute_universes_expect(tuple(range(0, 513)))

@@ -19,17 +19,17 @@ class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
                  sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
                  forceSync: bool = False, sync_universe: int = 0, dmxStartCode: int = 0x00):
-        self._cid = cid
+        self.cid = cid
         self.sourceName: str = sourceName
-        self._priority = priority
-        self._syncAddr = sync_universe
-        self._universe = universe
+        self.priority = priority
+        self.syncAddr = sync_universe
+        self.universe = universe
         self.option_StreamTerminated: bool = streamTerminated
         self.option_PreviewData: bool = previewData
         self.option_ForceSync: bool = forceSync
-        self._sequence = sequence
-        self._dmxStartCode = dmxStartCode
-        self._dmxData = dmxData
+        self.sequence = sequence
+        self.dmxStartCode = dmxStartCode
+        self.dmxData = dmxData
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
@@ -103,6 +103,11 @@ class DataPacket(RootLayer):
         """
         For legacy devices and to prevent errors, the length of the DMX data is normalized to 512
         """
+        if len(data) > 512 or \
+                not all(isinstance(x, int) for x in data) or \
+                not all(0 <= x <= 255 for x in data):
+            raise ValueError(f'Data is a tuple with a max length of 512! The data in the tuple has to be valid bytes! '
+                             f'Length was {len(data)}')
         newData = [0]*512
         for i in range(0, min(len(data), 512)):
             newData[i] = data[i]
