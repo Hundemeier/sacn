@@ -4,6 +4,7 @@ import pytest
 from sacn.messages.data_packet import \
     calculate_multicast_addr, \
     DataPacket
+from sacn.messages.general_test import property_number_range_check
 
 
 def test_calculate_multicast_addr():
@@ -84,9 +85,9 @@ def test_sequence_increment():
 def test_parse_data_packet():
     # Use the example present in the E1.31 spec in appendix B
     raw_data = [
-        # preamble
-        0x00, 0x01,
-        # postamble
+        # preamble size
+        0x00, 0x10,
+        # postamble size
         0x00, 0x00,
         # ACN packet identifier
         0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00,
@@ -198,12 +199,3 @@ def test_dmx_start_code():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
     def property(i): packet.dmxStartCode = i
     property_number_range_check(0, 255, property)
-
-
-def property_number_range_check(lower_bound: int, upper_bound: int, function):
-    for i in range(lower_bound, upper_bound + 1):
-        function(i)
-    with pytest.raises(ValueError):
-        function(lower_bound - 1)
-    with pytest.raises(ValueError):
-        function(upper_bound + 1)

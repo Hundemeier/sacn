@@ -15,8 +15,8 @@ from sacn.messages.root_layer import \
 
 class SyncPacket(RootLayer):
     def __init__(self, cid: tuple, syncAddr: int, sequence: int = 0):
-        self._syncAddr = syncAddr
-        self._sequence = sequence
+        self.syncAddr = syncAddr
+        self.sequence = sequence
         super().__init__(49, cid, VECTOR_ROOT_E131_EXTENDED)
 
     @property
@@ -26,7 +26,7 @@ class SyncPacket(RootLayer):
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
         if sync_universe not in range(1, 64000):
-            raise TypeError(f'sync_universe must be [1-63999]! value was {sync_universe}')
+            raise ValueError(f'sync_universe must be [1-63999]! value was {sync_universe}')
         self._syncAddr = sync_universe
 
     @property
@@ -36,7 +36,7 @@ class SyncPacket(RootLayer):
     @sequence.setter
     def sequence(self, sequence: int):
         if sequence not in range(0, 256):
-            raise TypeError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
+            raise ValueError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
 
     def sequence_increase(self):
@@ -68,6 +68,6 @@ class SyncPacket(RootLayer):
            tuple(raw_data[40:44]) != tuple(VECTOR_E131_EXTENDED_SYNCHRONIZATION):
             # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
-        tmpPacket = SyncPacket(cid=raw_data[22:38], syncAddr=byte_tuple_to_int(raw_data[45:47]))
+        tmpPacket = SyncPacket(cid=tuple(raw_data[22:38]), syncAddr=byte_tuple_to_int(raw_data[45:47]))
         tmpPacket.sequence = raw_data[44]
         return tmpPacket
