@@ -18,7 +18,7 @@ Features:
 
 ## Setup
 This Package is in the [pypi](https://pypi.org/project/sacn/). To install the package use `pip install sacn`. Python 3.6 or newer required!
-To use the Libary `import sacn`.
+To use the library `import sacn`.
 If you want to install directly from source, download or clone the repository and execute `pip install .` where the setup.py is located.
 For more information on pip installation see: https://packaging.python.org/tutorials/installing-packages/#installing-from-a-local-src-tree
 
@@ -81,7 +81,7 @@ Available Attributes for `sender[<universe>].<attribute>` are:
  * `destination: str`: the unicast destination as string. (eg "192.168.1.150") Default: "127.0.0.1"
  * `multicast: bool`: set whether to send out via multicast or not. Default: False
  If True the data is send out via multicast and not unicast.
- * `ttl: int`: the time-to-live for the packets that are send out via mutlicast on this universe. Default: 8
+ * `ttl: int`: the time-to-live for the packets that are send out via multicast on this universe. Default: 8
  * `priority: int`: (must be between 0-200) the priority for this universe that is send out. If multiple sources in a
  network are sending to the same receiver the data with the highest priority wins. Default: 100
  * `preview_data: bool`: Flag to mark the data as preview data for visualization purposes. Default: False
@@ -125,9 +125,9 @@ sender[1].dmx_data = (1, 2, 3, 4)  # some test DMX data
 sender[2].dmx_data = (5, 6, 7, 8)  # by the time we are here, the above data would be already send out,
 # if manual_flush would be False. This could cause some jitter
 # so instead we are flushing manual
-time.sleep(1) # let the sender initalize itself
+time.sleep(1) # let the sender initialize itself
 sender.flush()
-sender.manual_flush = False # keep maunal flush off as long as possible, because if it is on, the automatic
+sender.manual_flush = False # keep manual flush off as long as possible, because if it is on, the automatic
 # sending of packets is turned off and that is not recommended
 sender.stop() # stop sending out
 ```
@@ -200,6 +200,21 @@ The DataPacket provides following attributes:
  [Alternate START Codes](https://tsp.esta.org/tsp/working_groups/CP/DMXAlternateCodes.php) for more information.
  * `dmxData: tuple`: the DMX data as tuple. Max length is 512 and shorter tuples getting normalized to a length of 512.
  Filled with 0 for empty spaces.
+
+## Development
+Some tools are used to help with development of this library. These are [flake8](https://flake8.pycqa.org), [pytest](https://pytest.org) and [coverage.py](https://coverage.readthedocs.io).
+
+Install those tools with pip:
+
+```
+pip install flake8 pytest coverage
+```
+
+`flake8` checks for formatting issues and can be run with `flake8` or `python -m flake8` in the root directory of this repository.
+
+`pytest` is used for unit testing and can be executed with `pytest` or `python -m pytest` in the root directory of this repository.
+
+It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
 ### Changelog
  * 1.6.1: Fixed a bug, where the DMX start code was not set on received packets (Thanks to mthespian! See #29 for more information)
