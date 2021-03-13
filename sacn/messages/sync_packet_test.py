@@ -123,3 +123,9 @@ def test_parse_sync_packet():
     # test for invalid vectors
     with pytest.raises(TypeError):
         SyncPacket.make_sync_packet([x % 256 for x in range(0, 47)])
+
+
+def test_byte_construction_and_deconstruction():
+    built_packet = SyncPacket(tuple(range(0, 16)), 12, 127)
+    read_packet = SyncPacket.make_sync_packet(built_packet.getBytes())
+    assert built_packet == read_packet

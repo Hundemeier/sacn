@@ -191,3 +191,9 @@ def test_parse_sync_packet():
     raw_data = raw_data[0:len(raw_data) - 1]
     with pytest.raises(TypeError):
         UniverseDiscoveryPacket.make_universe_discovery_packet(raw_data)
+
+
+def test_byte_construction_and_deconstruction():
+    built_packet = UniverseDiscoveryPacket(tuple(range(0, 16)), "Test", tuple(range(0, 512)), 0, 1)
+    read_packet = UniverseDiscoveryPacket.make_universe_discovery_packet(built_packet.getBytes())
+    assert built_packet == read_packet
