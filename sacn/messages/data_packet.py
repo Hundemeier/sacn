@@ -37,6 +37,17 @@ class DataPacket(RootLayer):
                f'CID: {self._cid}'
 
     @property
+    def sourceName(self) -> str:
+        return self._sourceName
+
+    @sourceName.setter
+    def sourceName(self, sourceName: int):
+        tmp_sourceName_length = len(str(sourceName).encode('UTF-8'))
+        if tmp_sourceName_length > 63:
+            raise ValueError(f'sourceName must be less than 64 bytes when UTF-8 encoded! "{sourceName}" is {tmp_sourceName_length} bytes')
+        self._sourceName = sourceName
+
+    @property
     def priority(self) -> int:
         return self._priority
 
@@ -122,11 +133,11 @@ class DataPacket(RootLayer):
         # Vector Framing Layer:-----------------
         rtrnList.extend(VECTOR_E131_DATA_PACKET)
         # sourceName:---------------------------
-        # make a 64 byte long sourceName
-        tmpSourceName = [0] * 64
-        for i in range(0, min(len(tmpSourceName), len(self.sourceName))):
-            tmpSourceName[i] = ord(self.sourceName[i])
+        # UTF-8 encode the string
+        tmpSourceName = str(self._sourceName).encode('UTF-8')
         rtrnList.extend(tmpSourceName)
+        # pad to 64 bytes
+        rtrnList.extend([0] * (64 - len(tmpSourceName)))
         # priority------------------------------
         rtrnList.append(self._priority)
         # syncAddress---------------------------
