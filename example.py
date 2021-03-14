@@ -10,6 +10,10 @@
 
 import time
 import sacn
+import logging
+
+# enable logging of sacn module
+logging.basicConfig(level=logging.DEBUG)
 
 receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
