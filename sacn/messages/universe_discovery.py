@@ -27,6 +27,8 @@ class UniverseDiscoveryPacket(RootLayer):
 
     @sourceName.setter
     def sourceName(self, sourceName: int):
+        if type(sourceName) is not str:
+            raise TypeError(f'sourceName must be a string! Type was {type(sourceName)}')
         tmp_sourceName_length = len(str(sourceName).encode('UTF-8'))
         if tmp_sourceName_length > 63:
             raise ValueError(f'sourceName must be less than 64 bytes when UTF-8 encoded! "{sourceName}" is {tmp_sourceName_length} bytes')
@@ -38,6 +40,8 @@ class UniverseDiscoveryPacket(RootLayer):
 
     @page.setter
     def page(self, page: int):
+        if type(page) is not int:
+            raise TypeError(f'Page must be an integer! Type was {type(page)}')
         if page not in range(0, 256):
             raise ValueError(f'Page is a byte! values: [0-255]! value was {page}')
         self._page = page
@@ -48,8 +52,10 @@ class UniverseDiscoveryPacket(RootLayer):
 
     @lastPage.setter
     def lastPage(self, lastPage: int):
+        if type(lastPage) is not int:
+            raise TypeError(f'lastPage must be an integer! Type was {type(lastPage)}')
         if lastPage not in range(0, 256):
-            raise ValueError(f'Page is a byte! values: [0-255]! value was {lastPage}')
+            raise ValueError(f'lastPage is a byte! values: [0-255]! value was {lastPage}')
         self._lastPage = lastPage
 
     @property
@@ -59,8 +65,7 @@ class UniverseDiscoveryPacket(RootLayer):
     @universes.setter
     def universes(self, universes: tuple):
         if len(universes) > 512 or \
-                not all(isinstance(x, int) for x in universes) or \
-                not all(0 <= x <= 63999 for x in universes):
+                not all((isinstance(x, int) and (0 <= x <= 63999)) for x in universes):
             raise ValueError(f'Universes is a tuple with a max length of 512! The data in the tuple has to be valid universe numbers! '
                              f'Length was {len(universes)}')
         self._universes = sorted(universes)

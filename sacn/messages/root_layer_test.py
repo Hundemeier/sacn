@@ -56,19 +56,34 @@ def test_make_flagsandlength():
 def test_cid():
     cid1 = tuple(range(0, 16))
     cid2 = tuple(range(1, 17))
-    vector = (1, 2, 3, 4)
-    packet = RootLayer(123, cid1, vector)
+    vector1 = (1, 2, 3, 4)
+
+    def char_range(char1, char2):
+        """Generates the characters from `c1` to `c2`, ranged just like python."""
+        for c in range(ord(char1), ord(char2)):
+            yield chr(c)
+
+    # test constructor
+    packet = RootLayer(123, cid1, vector1)
     assert packet.cid == cid1
     packet.cid = cid2
     assert packet.cid == cid2
-    # test that CID can not be shorter or longer than 16
+    # test that constructor validates cid
+    with pytest.raises(ValueError):
+        RootLayer(length=123, cid=tuple(char_range("A", "Q")), vector=vector1)
+    # test that CID must be 16 elements
     with pytest.raises(ValueError):
         packet.cid = tuple(range(0, 17))
     with pytest.raises(ValueError):
         packet.cid = tuple(range(0, 15))
-    # test that a CID can only contain valid byte values
+    # test that CID only contains valid byte values
     with pytest.raises(ValueError):
         packet.cid = tuple(range(250, 266))
+    with pytest.raises(ValueError):
+        packet.cid = tuple(char_range("b", "r"))
+    # test that CID is a tuple
+    with pytest.raises(TypeError):
+        packet.cid = range(0, 16)
 
 
 def test_root_layer_bytes():

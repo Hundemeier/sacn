@@ -41,7 +41,9 @@ class DataPacket(RootLayer):
         return self._sourceName
 
     @sourceName.setter
-    def sourceName(self, sourceName: int):
+    def sourceName(self, sourceName: str):
+        if type(sourceName) is not str:
+            raise TypeError(f'sourceName must be a string! Type was {type(sourceName)}')
         tmp_sourceName_length = len(str(sourceName).encode('UTF-8'))
         if tmp_sourceName_length > 63:
             raise ValueError(f'sourceName must be less than 64 bytes when UTF-8 encoded! "{sourceName}" is {tmp_sourceName_length} bytes')
@@ -53,6 +55,8 @@ class DataPacket(RootLayer):
 
     @priority.setter
     def priority(self, priority: int):
+        if type(priority) is not int:
+            raise TypeError(f'priority must be an integer! Type was {type(priority)}')
         if priority not in range(0, 201):
             raise ValueError(f'priority must be in range [0-200]! value was {priority}')
         self._priority = priority
@@ -63,6 +67,8 @@ class DataPacket(RootLayer):
 
     @universe.setter
     def universe(self, universe: int):
+        if type(universe) is not int:
+            raise TypeError(f'universe must be an integer! Type was {type(universe)}')
         if universe not in range(1, 64000):
             raise ValueError(f'universe must be [1-63999]! value was {universe}')
         self._universe = universe
@@ -73,6 +79,8 @@ class DataPacket(RootLayer):
 
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
+        if type(sync_universe) is not int:
+            raise TypeError(f'sync_universe must be an integer! Type was {type(sync_universe)}')
         if sync_universe not in range(0, 64000):
             raise ValueError(f'sync_universe must be [1-63999]! value was {sync_universe}')
         self._syncAddr = sync_universe
@@ -83,8 +91,10 @@ class DataPacket(RootLayer):
 
     @sequence.setter
     def sequence(self, sequence: int):
+        if type(sequence) is not int:
+            raise TypeError(f'sequence must be an integer! Type was {type(sequence)}')
         if sequence not in range(0, 256):
-            raise ValueError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
+            raise ValueError(f'sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
 
     def sequence_increase(self):
@@ -101,6 +111,8 @@ class DataPacket(RootLayer):
         """
         DMX start code values: 0x00 for level data; 0xDD for per address priority data
         """
+        if type(dmxStartCode) is not int:
+            raise TypeError(f'dmx start code must be an integer! Type was {type(dmxStartCode)}')
         if dmxStartCode not in range(0, 256):
             raise ValueError(f'dmx start code is a byte! values: [0-255]! value was {dmxStartCode}')
         self._dmxStartCode = dmxStartCode
@@ -115,9 +127,8 @@ class DataPacket(RootLayer):
         For legacy devices and to prevent errors, the length of the DMX data is normalized to 512
         """
         if len(data) > 512 or \
-                not all(isinstance(x, int) for x in data) or \
-                not all(0 <= x <= 255 for x in data):
-            raise ValueError(f'Data is a tuple with a max length of 512! The data in the tuple has to be valid bytes! '
+                not all((isinstance(x, int) and (0 <= x <= 255)) for x in data):
+            raise ValueError(f'dmxData is a tuple with a max length of 512! The data in the tuple has to be valid bytes! '
                              f'Length was {len(data)}')
         newData = [0]*512
         for i in range(0, min(len(data), 512)):
