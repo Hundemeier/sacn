@@ -84,11 +84,14 @@ class receiverThread(threading.Thread):
         for callback in self.callbacks[LISTEN_ON_OPTIONS[0]]:
             callback(universe=universe, changed='timeout')
         # delete the timestamp so that the callback is not fired multiple times
-        del self.lastDataTimestamps[universe]
+        try:
+            del self.lastDataTimestamps[universe]
+        except KeyError:
+            pass  # drop exception, if there was no last timestamp
         # delete sequence entries so that no packet out of order problems occur
         try:
             del self.lastSequence[universe]
-        except Exception:
+        except KeyError:
             pass  # sometimes an error occurs here TODO: check why here comes an error
 
     def refresh_priorities(self, packet: DataPacket) -> None:
