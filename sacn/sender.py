@@ -130,10 +130,11 @@ class sACNsender:
         check_universe(universe_to)
         # store the sending object and change the universe in the packet of the sending
         tmp_output = self._outputs[universe_from]
-        tmp_output._packet.universe = universe_to
         # deactivate sending
         self.deactivate_output(universe_from)
         # activate new sending with the new universe
+        tmp_output._packet.universe = universe_to
+        tmp_output._packet.option_StreamTerminated = False
         self._outputs[universe_to] = tmp_output
 
     def __getitem__(self, item: int) -> Output:
