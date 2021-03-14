@@ -19,7 +19,7 @@ class DataPacket(RootLayer):
     def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
                  sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
                  forceSync: bool = False, sync_universe: int = 0, dmxStartCode: int = 0x00):
-        self.cid = cid
+        super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
         self.sourceName: str = sourceName
         self.priority = priority
         self.syncAddr = sync_universe
@@ -30,7 +30,6 @@ class DataPacket(RootLayer):
         self.sequence = sequence
         self.dmxStartCode = dmxStartCode
         self.dmxData = dmxData
-        super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
 
     def __str__(self):
         return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence}, ' \

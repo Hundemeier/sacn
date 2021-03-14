@@ -238,7 +238,9 @@ def test_dmx_data():
         assert len(packet.dmxData) == 512
         assert packet.length == 638
         # test constructor for the same parameter
-        DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
+        packet2 = DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
+        assert len(packet2.dmxData) == 512
+        assert packet2.length == 638
 
     def execute_universes_expect(data: tuple):
         with pytest.raises(ValueError):
