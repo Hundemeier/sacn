@@ -1,17 +1,13 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
-import socket
+from sacn.receiving.receiver_handler import ReceiverHandler, ReceiverHandlerListener
+from sacn.messages.data_packet import DataPacket, calculate_multicast_addr
 from typing import Tuple
 
-E131_NETWORK_DATA_LOSS_TIMEOUT_ms = 2500
 LISTEN_ON_OPTIONS = ("availability", "universe")
-# this has to be up here, because otherwise we have a circular import that can not import those two
-
-from sacn.receiving.receiver_thread import receiverThread  # noqa: E402
-from sacn.messages.data_packet import calculate_multicast_addr  # noqa: E402
 
 
-class sACNreceiver:
+class sACNreceiver(ReceiverHandlerListener):
     def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568):
         """
         Make a receiver for sACN data. Do not forget to start and add callbacks for receiving messages!
@@ -20,18 +16,19 @@ class sACNreceiver:
         :param bind_port: Default: 5568. It is not recommended to change this value!
         Only use when you know what you are doing!
         """
-        # If you bind to a specific interface on the Mac, no multicast data will arrive.
-        # If you try to bind to all interfaces on Windows, no multicast data will arrive.
-        self._bindAddress = bind_address
-        self._thread = None
+
         self._callbacks = {'availability': [],
                            'universe': []}  # init with empty list, because otherwise an error gets thrown
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        try:
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        except socket.error:  # Not all systems support multiple sockets on the same port and interface
-            pass
-        self.sock.bind((bind_address, bind_port))
+        self._handler: ReceiverHandler = ReceiverHandler(bind_address, bind_port, self)
+
+    def on_availability_change(self, universe: int, changed: str) -> None:
+        for callback in self._callbacks[LISTEN_ON_OPTIONS[0]]:
+            # fire callbacks if this is the first received packet for this universe
+            callback(universe=universe, changed=changed)
+
+    def on_dmx_data_change(self, packet: DataPacket) -> None:
+        for callback in self._callbacks[packet.universe]:
+            callback(packet)
 
     def listen_on(self, trigger: str, **kwargs) -> callable:
         """
@@ -74,9 +71,7 @@ class sACNreceiver:
         :param universe: the universe to join the multicast group.
         The network hardware has to support the multicast feature!
         """
-        self.sock.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
-                             socket.inet_aton(calculate_multicast_addr(universe)) +
-                             socket.inet_aton(self._bindAddress))
+        self._handler.socket.join_multicast(calculate_multicast_addr(universe))
 
     def leave_multicast(self, universe: int) -> None:
         """
@@ -85,29 +80,20 @@ class sACNreceiver:
         :param universe: the universe to leave the multicast group.
         The network hardware has to support the multicast feature!
         """
-        try:
-            self.sock.setsockopt(socket.SOL_IP, socket.IP_DROP_MEMBERSHIP,
-                                 socket.inet_aton(calculate_multicast_addr(universe)) +
-                                 socket.inet_aton(self._bindAddress))
-        except socket.error:  # try to leave the multicast group for the universe
-            pass
+        self._handler.socket.leave_multicast(calculate_multicast_addr(universe))
 
     def start(self) -> None:
         """
         Starts a new thread that handles the input. If a thread is already running, the thread will be restarted.
         """
         self.stop()  # stop an existing thread
-        self._thread = receiverThread(socket=self.sock, callbacks=self._callbacks)
-        self._thread.start()
+        self._handler.socket.start()
 
     def stop(self) -> None:
         """
         Stops a running thread. If no thread was started nothing happens.
         """
-        try:
-            self._thread.enabled_flag = False
-        except AttributeError:  # try to stop the thread
-            pass
+        self._handler.socket.stop()
 
     def get_possible_universes(self) -> Tuple[int]:
         """
@@ -115,7 +101,7 @@ class sACNreceiver:
         so the list may change over time. Depending on sources that are shutting down their streams.
         :return: a tuple with all universes that were received so far and hadn't a timeout
         """
-        return tuple(self._thread.lastDataTimestamps.keys())
+        return tuple(self._handler.get_possible_universes())
 
     def __del__(self):
         # stop a potential running thread
