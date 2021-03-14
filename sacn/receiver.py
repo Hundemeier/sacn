@@ -37,7 +37,7 @@ class sACNreceiver:
         """
         This is a simple decorator for registering a callback for an event. You can also use 'register_listener'.
         A list with all possible options is available via LISTEN_ON_OPTIONS.
-        :param trigger: Currently supported options: 'universe availability change', 'universe'
+        :param trigger: Currently supported options: 'availability', 'universe'
         """
         def decorator(f):
             self.register_listener(trigger, f, **kwargs)
@@ -49,7 +49,7 @@ class sACNreceiver:
         Register a listener for the given trigger. Raises an TypeError when the trigger is not a valid one.
         To get a list with all valid triggers, use LISTEN_ON_OPTIONS.
         :param trigger: the trigger on which the given callback should be used.
-        Currently supported: 'universe availability change', 'universe'
+        Currently supported: 'availability', 'universe'
         :param func: the callback. The parameters depend on the trigger. See README for more information
         """
         if trigger in LISTEN_ON_OPTIONS:
