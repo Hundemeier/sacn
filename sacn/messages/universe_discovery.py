@@ -22,6 +22,17 @@ class UniverseDiscoveryPacket(RootLayer):
         super().__init__((len(universes) * 2) + 120, cid, VECTOR_ROOT_E131_EXTENDED)
 
     @property
+    def sourceName(self) -> str:
+        return self._sourceName
+
+    @sourceName.setter
+    def sourceName(self, sourceName: int):
+        tmp_sourceName_length = len(str(sourceName).encode('UTF-8'))
+        if tmp_sourceName_length > 63:
+            raise ValueError(f'sourceName must be less than 64 bytes when UTF-8 encoded! "{sourceName}" is {tmp_sourceName_length} bytes')
+        self._sourceName = sourceName
+
+    @property
     def page(self) -> int:
         return self._page
 
@@ -62,11 +73,12 @@ class UniverseDiscoveryPacket(RootLayer):
         # Vector Framing Layer:------------------------------
         rtrnList.extend(VECTOR_E131_EXTENDED_DISCOVERY)
         # source Name Framing Layer:-------------------------
-        # make a 64 byte long sourceName
-        tmpSourceName = [0] * 64
-        for i in range(0, min(len(tmpSourceName), len(self.sourceName))):
-            tmpSourceName[i] = ord(self.sourceName[i])
+        # sourceName:---------------------------
+        # UTF-8 encode the string
+        tmpSourceName = str(self._sourceName).encode('UTF-8')
         rtrnList.extend(tmpSourceName)
+        # pad to 64 bytes
+        rtrnList.extend([0] * (64 - len(tmpSourceName)))
         # reserved fields:-----------------------------------
         rtrnList.extend([0] * 4)
         # Universe Discovery Layer:-------------------------------------

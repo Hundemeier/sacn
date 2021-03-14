@@ -171,6 +171,18 @@ def test_str():
     assert packet.__str__() == "sACN DataPacket: Universe: 62000, Priority: 195, Sequence: 34, CID: (16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8)"
 
 
+def test_sourceName():
+    # test string has 25 characters but is 64 bytes (1 too many) when UTF-8 encoded
+    overlength_string = "𔑑覱֪I𤵎⠣Ķ'𫳪爓Û:𢏴㓑ò4𰬀鿹џ>𖬲膬ЩJ𞄇"
+    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    # test property setter
+    with pytest.raises(ValueError):
+        packet.sourceName = overlength_string
+    # test constructor
+    with pytest.raises(ValueError):
+        packet = DataPacket(cid=tuple(range(0, 16)), sourceName=overlength_string, universe=1)
+
+
 def test_priority():
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
     # test property setter

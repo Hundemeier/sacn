@@ -24,6 +24,18 @@ def test_constructor():
         UniverseDiscoveryPacket(tuple(range(0, 17)), sourceName, universes)
 
 
+def test_sourceName():
+    # test string has 25 characters but is 64 bytes (1 too many) when UTF-8 encoded
+    overlength_string = "𔑑覱֪I𤵎⠣Ķ'𫳪爓Û:𢏴㓑ò4𰬀鿹џ>𖬲膬ЩJ𞄇"
+    packet = UniverseDiscoveryPacket(tuple(range(0, 16)), "Test", ())
+    # test property setter
+    with pytest.raises(ValueError):
+        packet.sourceName = overlength_string
+    # test constructor
+    with pytest.raises(ValueError):
+        packet = UniverseDiscoveryPacket(tuple(range(0, 16)), overlength_string, ())
+
+
 def test_page():
     packet = UniverseDiscoveryPacket(tuple(range(0, 16)), "Test", ())
     # test property setter
