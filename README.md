@@ -217,6 +217,8 @@ pip install flake8 pytest coverage
 It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
 ### Changelog
+ * 1.6.2: Test coverage of sub-module `messages` is now 100%. Fixed a bug where a too long source name did not throw an exception.
+ Fixed a bug where invalid DMX data could be set on the `DataPacket`. (Thanks to mthespian! See #30 for more information)
  * 1.6.1: Fixed a bug, where the DMX start code was not set on received packets (Thanks to mthespian! See #29 for more information)
  * 1.6: Added dmxStartCode property to DataPacket (Thanks to mthespian! see #27 for more information)
  * 1.5: Performance improvement: Deleted debugging statements in hot path of packet sending and receiving (Thanks to shauneccles! See #25 for more information)
