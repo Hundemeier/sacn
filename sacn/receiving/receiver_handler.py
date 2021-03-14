@@ -23,13 +23,16 @@ class ReceiverHandlerListener:
 
 
 class ReceiverHandler(ReceiverSocketListener):
-    def __init__(self, bind_address: str, bind_port: int, listener: ReceiverHandlerListener):
+    def __init__(self, bind_address: str, bind_port: int, listener: ReceiverHandlerListener, socket=None):
         """
         This is a private class and should not be used elsewhere. It handles the receiver state with sACN specific values.
         Calls any changes in the data streams on the listener.
-        Uses a UDP receiver socket with the given bind-address and -port.
+        Uses a UDP receiver socket with the given bind-address and -port, if the socket was not provided (i.e. None).
         """
-        self.socket: ReceiverSocketBase = ReceiverSocketUDP(self, bind_address, bind_port)
+        if socket is None:
+            self.socket: ReceiverSocketBase = ReceiverSocketUDP(self, bind_address, bind_port)
+        else:
+            self.socket = socket
         self._listener: ReceiverHandlerListener = listener
         # previousData for storing the last data that was send in a universe to check if the data has changed
         self._previousData: Dict[int, tuple] = {}
@@ -110,7 +113,7 @@ class ReceiverHandler(ReceiverSocketListener):
         try:  # try, because self.lastSequence might not been initialized
             diff = packet.sequence - self._lastSequence[packet.universe]
             # if diff is between ]-20,0], return False for a bad packet sequence
-            if 0 >= diff > -20:
+            if diff <= 0 and diff > -20:
                 return False
         except KeyError:
             pass
@@ -141,7 +144,7 @@ class ReceiverHandler(ReceiverSocketListener):
             self._listener.on_dmx_data_change(packet)
 
     def get_possible_universes(self) -> List[int]:
-        return self._lastDataTimestamps.keys()
+        return list(self._lastDataTimestamps.keys())
 
 
 def current_time_millis() -> int:
