@@ -26,7 +26,7 @@ class UniverseDiscoveryPacket(RootLayer):
         return self._sourceName
 
     @sourceName.setter
-    def sourceName(self, sourceName: int):
+    def sourceName(self, sourceName: str):
         if type(sourceName) is not str:
             raise TypeError(f'sourceName must be a string! Type was {type(sourceName)}')
         tmp_sourceName_length = len(str(sourceName).encode('UTF-8'))
