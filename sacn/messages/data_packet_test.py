@@ -176,11 +176,13 @@ def test_sourceName():
     overlength_string = "𔑑覱֪I𤵎⠣Ķ'𫳪爓Û:𢏴㓑ò4𰬀鿹џ>𖬲膬ЩJ𞄇"
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
     # test property setter
+    with pytest.raises(TypeError):
+        packet.sourceName = 0x33
     with pytest.raises(ValueError):
         packet.sourceName = overlength_string
     # test constructor
     with pytest.raises(ValueError):
-        packet = DataPacket(cid=tuple(range(0, 16)), sourceName=overlength_string, universe=1)
+        DataPacket(cid=tuple(range(0, 16)), sourceName=overlength_string, universe=1)
 
 
 def test_priority():
