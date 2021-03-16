@@ -29,6 +29,8 @@ def test_sourceName():
     overlength_string = "𔑑覱֪I𤵎⠣Ķ'𫳪爓Û:𢏴㓑ò4𰬀鿹џ>𖬲膬ЩJ𞄇"
     packet = UniverseDiscoveryPacket(tuple(range(0, 16)), "Test", ())
     # test property setter
+    with pytest.raises(TypeError):
+        packet.sourceName = 0x33
     with pytest.raises(ValueError):
         packet.sourceName = overlength_string
     # test constructor

@@ -25,6 +25,8 @@ class SyncPacket(RootLayer):
 
     @syncAddr.setter
     def syncAddr(self, sync_universe: int):
+        if type(sync_universe) is not int:
+            raise TypeError(f'sync_universe must be an integer! Type was {type(sync_universe)}')
         if sync_universe not in range(1, 64000):
             raise ValueError(f'sync_universe must be [1-63999]! value was {sync_universe}')
         self._syncAddr = sync_universe
@@ -35,8 +37,10 @@ class SyncPacket(RootLayer):
 
     @sequence.setter
     def sequence(self, sequence: int):
+        if type(sequence) is not int:
+            raise TypeError('sequence must be an integer')
         if sequence not in range(0, 256):
-            raise ValueError(f'Sequence is a byte! values: [0-255]! value was {sequence}')
+            raise ValueError(f'sequence is a byte! values: [0-255]! value was {sequence}')
         self._sequence = sequence
 
     def sequence_increase(self):
