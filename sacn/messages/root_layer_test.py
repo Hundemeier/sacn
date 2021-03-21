@@ -29,7 +29,7 @@ def test_byte_tuple_to_int():
     with pytest.raises(ValueError):
         byte_tuple_to_int((1, 2, 3))
     with pytest.raises(ValueError):
-        byte_tuple_to_int((1, "string"))
+        byte_tuple_to_int((1, 'string'))
     with pytest.raises(ValueError):
         byte_tuple_to_int((1, 500))
 
@@ -70,7 +70,7 @@ def test_cid():
     assert packet.cid == cid2
     # test that constructor validates cid
     with pytest.raises(ValueError):
-        RootLayer(length=123, cid=tuple(char_range("A", "Q")), vector=vector1)
+        RootLayer(length=123, cid=tuple(char_range('A', 'Q')), vector=vector1)
     # test that CID must be 16 elements
     with pytest.raises(ValueError):
         packet.cid = tuple(range(0, 17))
@@ -80,7 +80,7 @@ def test_cid():
     with pytest.raises(ValueError):
         packet.cid = tuple(range(250, 266))
     with pytest.raises(ValueError):
-        packet.cid = tuple(char_range("b", "r"))
+        packet.cid = tuple(char_range('b', 'r'))
     # test that CID is a tuple
     with pytest.raises(TypeError):
         packet.cid = range(0, 16)

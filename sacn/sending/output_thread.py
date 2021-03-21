@@ -96,7 +96,7 @@ class OutputThread(threading.Thread):
             cid=self.__CID, sourceName=self._sourceName, universes=list(self._outputs.keys()))
         for packet in packets:
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            self.send_packet(packet=packet, destination="<broadcast>")
+            self.send_packet(packet=packet, destination='<broadcast>')
 
     def send_packet(self, packet, destination: str):
         MESSAGE = bytearray(packet.getBytes())

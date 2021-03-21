@@ -62,7 +62,7 @@ def test_get_bytes():
         0x00, 0x00,
         # ACN packet identifier
         0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00,
-        # flags and length; again a mistake in the E1.31 spec, as this states "0x70, 0x30"
+        # flags and length; again a mistake in the E1.31 spec, as this states '0x70, 0x30'
         # this would violate the parent spec E1.17 (ACN) section 2.4.2
         0x70, 0x21,
         # Root vector
@@ -91,7 +91,7 @@ def test_parse_sync_packet():
         0x00, 0x00,
         # ACN packet identifier
         0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00,
-        # flags and length; again a mistake in the E1.31 spec, as this states "0x70, 0x30"
+        # flags and length; again a mistake in the E1.31 spec, as this states '0x70, 0x30'
         # this would violate the parent spec E1.17 (ACN) section 2.4.2
         0x70, 0x21,
         # Root vector

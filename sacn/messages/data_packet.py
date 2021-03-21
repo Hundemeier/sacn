@@ -217,4 +217,4 @@ class DataPacket(RootLayer):
 def calculate_multicast_addr(universe: int) -> str:
     hi_byte = universe >> 8  # a little bit shifting here
     lo_byte = universe & 0xFF  # a little bit mask there
-    return f"239.255.{hi_byte}.{lo_byte}"
+    return f'239.255.{hi_byte}.{lo_byte}'

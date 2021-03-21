@@ -14,8 +14,8 @@ from sacn.sending.output_thread import OutputThread, DEFAULT_PORT
 
 
 class sACNsender:
-    def __init__(self, bind_address: str = "0.0.0.0", bind_port: int = DEFAULT_PORT,
-                 source_name: str = "default source name", cid: tuple = (),
+    def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = DEFAULT_PORT,
+                 source_name: str = 'default source name', cid: tuple = (),
                  fps: int = 30, universeDiscovery: bool = True,
                  sync_universe: int = 63999):
         """
@@ -75,7 +75,7 @@ class sACNsender:
         """
         for uni in universes:
             if uni not in self._outputs:
-                raise ValueError(f"Cannot flush universe {uni}, it is not active!")
+                raise ValueError(f'Cannot flush universe {uni}, it is not active!')
         self._output_thread.send_out_all_universes(
             self._sync_universe,
             self._outputs if not universes else {uni: self._outputs[uni] for uni in universes}

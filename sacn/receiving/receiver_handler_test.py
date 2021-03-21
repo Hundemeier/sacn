@@ -81,7 +81,7 @@ def test_invalid_packet_bytes():
     assert listener.on_availability_change_changed is None
     assert listener.on_availability_change_universe is None
     assert listener.on_dmx_data_change_packet is None
-    # provide "random" data that is no DataPacket
+    # provide 'random' data that is no DataPacket
     socket.call_on_data(bytes(x % 256 for x in range(0, 512)))
     assert listener.on_availability_change_changed is None
     assert listener.on_availability_change_universe is None

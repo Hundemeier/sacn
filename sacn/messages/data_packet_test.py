@@ -8,8 +8,8 @@ from sacn.messages.general_test import property_number_range_check
 
 
 def test_calculate_multicast_addr():
-    universe_1 = "239.255.0.1"
-    universe_63999 = "239.255.249.255"
+    universe_1 = '239.255.0.1'
+    universe_63999 = '239.255.249.255'
     assert calculate_multicast_addr(1) == universe_1
     assert calculate_multicast_addr(63999) == universe_63999
     packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
@@ -21,7 +21,7 @@ def test_calculate_multicast_addr():
 def test_byte_construction_and_deconstruction():
     built_packet = DataPacket(
         cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
-        sourceName="Test Name",
+        sourceName='Test Name',
         universe=62000,
         dmxData=tuple(x % 256 for x in range(0, 512)),
         priority=195,
@@ -41,10 +41,10 @@ def test_property_adjustment_and_deconstruction():
     # but with changed properties that are not the default
     built_packet = DataPacket(
         cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
-        sourceName="Test Name",
+        sourceName='Test Name',
         universe=30)
     built_packet.cid = tuple(range(16))
-    built_packet.sourceName = "2nd Test Name"
+    built_packet.sourceName = '2nd Test Name'
     built_packet.universe = 31425
     built_packet.dmxData = ((200,) + tuple(range(255, 0, -1)) + tuple(range(255)) + (0,))
     built_packet.priority = 12
@@ -56,7 +56,7 @@ def test_property_adjustment_and_deconstruction():
     built_packet.dmxStartCode = 8
     read_packet = DataPacket.make_data_packet(built_packet.getBytes())
     assert read_packet.cid == tuple(range(16))
-    assert read_packet.sourceName == "2nd Test Name"
+    assert read_packet.sourceName == '2nd Test Name'
     assert read_packet.universe == 31425
     assert read_packet.dmxData == ((200,) + tuple(range(255, 0, -1)) + tuple(range(255)) + (0,))
     assert read_packet.priority == 12
@@ -72,7 +72,7 @@ def test_sequence_increment():
     # Test that the sequence number can be increased and the wrap around at 255 is correct
     built_packet = DataPacket(
         cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
-        sourceName="Test Name",
+        sourceName='Test Name',
         universe=30)
     built_packet.sequence = 78
     built_packet.sequence_increase()
@@ -101,7 +101,7 @@ def test_parse_data_packet():
         0x72, 0x57,
         # Framing vector
         0x00, 0x00, 0x00, 0x02,
-        # Source name "Source_A"
+        # Source name 'Source_A'
         0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -140,7 +140,7 @@ def test_parse_data_packet():
     assert packet.length == 638
     assert packet._vector == (0x00, 0x00, 0x00, 0x04)
     assert packet.cid == (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
-    assert packet.sourceName == "Source_A"
+    assert packet.sourceName == 'Source_A'
     assert packet.priority == 100
     assert packet.syncAddr == 7962
     assert packet.sequence == 154
@@ -164,11 +164,11 @@ def test_parse_data_packet():
 def test_str():
     packet = DataPacket(
         cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
-        sourceName="Test",
+        sourceName='Test',
         universe=62000,
         priority=195,
         sequence=34)
-    assert packet.__str__() == "sACN DataPacket: Universe: 62000, Priority: 195, Sequence: 34, CID: (16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8)"
+    assert packet.__str__() == 'sACN DataPacket: Universe: 62000, Priority: 195, Sequence: 34, CID: (16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8)'
 
 
 def test_sourceName():
@@ -251,7 +251,7 @@ def test_dmx_data():
             DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
 
     # test for non-int and out of range values values in tuple
-    execute_universes_expect(tuple("string"))
+    execute_universes_expect(tuple('string'))
     execute_universes_expect(tuple(range(255, 257)))
 
     # test for tuple-length > 512

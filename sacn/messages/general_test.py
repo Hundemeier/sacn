@@ -12,4 +12,4 @@ def property_number_range_check(lower_bound: int, upper_bound: int, *functions):
         with pytest.raises(ValueError):
             function(upper_bound + 1)
         with pytest.raises(TypeError):
-            function("Text")
+            function('Text')

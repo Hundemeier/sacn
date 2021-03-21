@@ -5,7 +5,7 @@ from sacn.receiving.receiver_handler import ReceiverHandler, ReceiverHandlerList
 from sacn.receiving.receiver_socket_base import ReceiverSocketBase
 from typing import Tuple
 
-LISTEN_ON_OPTIONS = ("availability", "universe")
+LISTEN_ON_OPTIONS = ('availability', 'universe')
 
 
 class sACNreceiver(ReceiverHandlerListener):
