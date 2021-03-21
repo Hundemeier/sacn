@@ -58,6 +58,24 @@ def test_first_packet():
     assert listener.on_dmx_data_change_packet.__dict__ == packet.__dict__
 
 
+def test_first_packet_stream_terminated():
+    _, listener, socket = get_handler()
+    assert listener.on_availability_change_changed is None
+    assert listener.on_availability_change_universe is None
+    assert listener.on_dmx_data_change_packet is None
+    packet = DataPacket(
+        cid=tuple(range(0, 16)),
+        sourceName='Test',
+        universe=1,
+        dmxData=tuple(range(0, 16)),
+        streamTerminated=True
+    )
+    socket.call_on_data(bytes(packet.getBytes()))
+    assert listener.on_availability_change_changed == 'timeout'
+    assert listener.on_availability_change_universe == 1
+    assert listener.on_dmx_data_change_packet.__dict__ == packet.__dict__
+
+
 def test_invalid_packet_bytes():
     _, listener, socket = get_handler()
     assert listener.on_availability_change_changed is None
@@ -188,3 +206,15 @@ def test_universe_stream_terminated():
     socket.call_on_data(bytes(packet.getBytes()))
     assert listener.on_availability_change_changed == 'timeout'
     assert listener.on_availability_change_universe == 1
+
+
+def test_abstract_receiver_handler_listener():
+    listener = ReceiverHandlerListener()
+    with pytest.raises(NotImplementedError):
+        listener.on_availability_change(1, 'test')
+    with pytest.raises(NotImplementedError):
+        listener.on_dmx_data_change(DataPacket(
+            cid=tuple(range(0, 16)),
+            sourceName='Test',
+            universe=1
+        ))
