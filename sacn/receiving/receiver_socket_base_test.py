@@ -13,9 +13,9 @@ def test_abstract_receiver_socket_listener():
 
 
 def test_abstract_receiver_socket_base():
-    socket = ReceiverSocketBase('test', None)
+    socket = ReceiverSocketBase(None)
     with pytest.raises(NotImplementedError):
-        socket.run()
+        socket.start()
     with pytest.raises(NotImplementedError):
         socket.stop()
     with pytest.raises(NotImplementedError):

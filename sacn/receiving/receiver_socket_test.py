@@ -6,7 +6,7 @@ from sacn.receiving.receiver_socket_base import ReceiverSocketBase
 
 class ReceiverSocketTest(ReceiverSocketBase):
     def __init__(self):
-        super().__init__(name='test socket', listener=None)
+        super().__init__(listener=None)
         self.run_called: bool = False
         self.stop_called: bool = False
         self.join_multicast_called: str = None

@@ -1,8 +1,11 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import socket
+import threading
 
 from sacn.receiving.receiver_socket_base import ReceiverSocketBase, ReceiverSocketListener
+
+THREAD_NAME = 'sACN input/receiver thread'
 
 
 class ReceiverSocketUDP(ReceiverSocketBase):
@@ -11,9 +14,7 @@ class ReceiverSocketUDP(ReceiverSocketBase):
     """
 
     def __init__(self, listener: ReceiverSocketListener, bind_address: str, bind_port: int):
-        # initialize thread infos
-        super().__init__(name='sACN input/receiver thread', listener=listener)
-        # self.setDaemon(True)  # TODO: might be beneficial to use a daemon thread
+        super().__init__(listener=listener)
 
         self._bind_address: str = bind_address
         self._bind_port: int = bind_port
@@ -28,11 +29,20 @@ class ReceiverSocketUDP(ReceiverSocketBase):
         self._socket.bind((self._bind_address, self._bind_port))
         self._logger.info(f'Bind receiver socket to IP: {self._bind_address} port: {self._bind_port}')
 
-    def run(self) -> None:
+    def start(self):
+        # initialize thread infos
+        thread = threading.Thread(
+            target=self.receive_loop,
+            name=THREAD_NAME
+        )
+        # thread.setDaemon(True)  # TODO: might be beneficial to use a daemon thread
+        thread.start()
+
+    def receive_loop(self) -> None:
         """
         Implements the run method inherited by threading.Thread
         """
-        self._logger.info(f'Started {self.name}')
+        self._logger.info(f'Started {THREAD_NAME}')
         self._socket.settimeout(0.1)  # timeout as 100ms
         self._enabled_flag = True
         while self._enabled_flag:
@@ -46,7 +56,7 @@ class ReceiverSocketUDP(ReceiverSocketBase):
                 continue  # if a timeout happens just go through while from the beginning
             self._listener.on_data(raw_data)
 
-        self._logger.info(f'Stopped {self.name}')
+        self._logger.info(f'Stopped {THREAD_NAME}')
 
     def stop(self) -> None:
         """
