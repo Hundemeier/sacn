@@ -188,7 +188,8 @@ def test_universe_timeout():
     assert listener.on_availability_change_changed == 'available'
     assert listener.on_availability_change_universe == 1
     # wait the specified amount of time and check, that a timeout was triggered
-    time.sleep(E131_NETWORK_DATA_LOSS_TIMEOUT_ms / 1000)
+    # add 10ms of grace time
+    time.sleep((E131_NETWORK_DATA_LOSS_TIMEOUT_ms / 1000) + 0.01)
     socket.call_on_periodic_callback()
     assert listener.on_availability_change_changed == 'timeout'
     assert listener.on_availability_change_universe == 1
