@@ -160,11 +160,17 @@ def test_possible_universes():
         universe=1,
         dmxData=tuple(range(0, 16))
     )
+    # add universe 1
     socket.call_on_data(bytes(packet.getBytes()))
     assert handler.get_possible_universes() == [1]
+    # add universe 2
     packet.universe = 2
     socket.call_on_data(bytes(packet.getBytes()))
     assert handler.get_possible_universes() == [1, 2]
+    # remove universe 2
+    packet.option_StreamTerminated = True
+    socket.call_on_data(bytes(packet.getBytes()))
+    assert handler.get_possible_universes() == [1]
 
 
 def test_universe_timeout():

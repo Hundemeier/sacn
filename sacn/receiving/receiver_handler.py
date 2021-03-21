@@ -23,7 +23,7 @@ class ReceiverHandlerListener:
 
 
 class ReceiverHandler(ReceiverSocketListener):
-    def __init__(self, bind_address: str, bind_port: int, listener: ReceiverHandlerListener, socket=None):
+    def __init__(self, bind_address: str, bind_port: int, listener: ReceiverHandlerListener, socket: ReceiverSocketBase = None):
         """
         This is a private class and should not be used elsewhere. It handles the receiver state with sACN specific values.
         Calls any changes in the data streams on the listener.
@@ -32,7 +32,7 @@ class ReceiverHandler(ReceiverSocketListener):
         if socket is None:
             self.socket: ReceiverSocketBase = ReceiverSocketUDP(self, bind_address, bind_port)
         else:
-            self.socket = socket
+            self.socket: ReceiverSocketBase = socket
         self._listener: ReceiverHandlerListener = listener
         # previousData for storing the last data that was send in a universe to check if the data has changed
         self._previousData: Dict[int, tuple] = {}

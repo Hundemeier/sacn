@@ -1,33 +1,47 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
-from sacn.receiving.receiver_handler import ReceiverHandler, ReceiverHandlerListener
 from sacn.messages.data_packet import DataPacket, calculate_multicast_addr
+from sacn.receiving.receiver_handler import ReceiverHandler, ReceiverHandlerListener
+from sacn.receiving.receiver_socket_base import ReceiverSocketBase
 from typing import Tuple
 
 LISTEN_ON_OPTIONS = ("availability", "universe")
 
 
 class sACNreceiver(ReceiverHandlerListener):
-    def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568):
+    def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = 5568, socket: ReceiverSocketBase = None):
         """
         Make a receiver for sACN data. Do not forget to start and add callbacks for receiving messages!
         :param bind_address: if you are on a Windows system and want to use multicast provide a valid interface
         IP-Address! Otherwise omit.
         :param bind_port: Default: 5568. It is not recommended to change this value!
         Only use when you know what you are doing!
+        :param socket: Provide a special socket implementation if necessary. Must be derived from ReceiverSocketBase,
+        only use if the default socket implementation of this library is not sufficient.
         """
 
-        self._callbacks = {'availability': [],
-                           'universe': []}  # init with empty list, because otherwise an error gets thrown
-        self._handler: ReceiverHandler = ReceiverHandler(bind_address, bind_port, self)
+        self._callbacks: dict = {}
+        self._handler: ReceiverHandler = ReceiverHandler(bind_address, bind_port, self, socket)
 
     def on_availability_change(self, universe: int, changed: str) -> None:
-        for callback in self._callbacks[LISTEN_ON_OPTIONS[0]]:
+        callbacks = []
+        # call nothing, if the list with callbacks is empty
+        try:
+            callbacks = self._callbacks[LISTEN_ON_OPTIONS[0]]
+        except KeyError:
+            pass
+        for callback in callbacks:
             # fire callbacks if this is the first received packet for this universe
             callback(universe=universe, changed=changed)
 
     def on_dmx_data_change(self, packet: DataPacket) -> None:
-        for callback in self._callbacks[packet.universe]:
+        callbacks = []
+        # call nothing, if the list with callbacks is empty
+        try:
+            callbacks = self._callbacks[packet.universe]
+        except KeyError:
+            pass
+        for callback in callbacks:
             callback(packet)
 
     def listen_on(self, trigger: str, **kwargs) -> callable:

@@ -5,15 +5,15 @@ from sacn.receiving.receiver_socket_base import ReceiverSocketBase
 
 
 class ReceiverSocketTest(ReceiverSocketBase):
-    def __init__(self):
-        super().__init__(listener=None)
-        self.run_called: bool = False
+    def __init__(self, listener=None):
+        super().__init__(listener)
+        self.start_called: bool = False
         self.stop_called: bool = False
         self.join_multicast_called: str = None
         self.leave_multicast_called: str = None
 
-    def run(self) -> None:
-        self.run_called = True
+    def start(self) -> None:
+        self.start_called = True
 
     def stop(self) -> None:
         self.stop_called = True
