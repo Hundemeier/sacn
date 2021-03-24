@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='sacn',
-    version='1.6.2',
+    version='1.6.3',
     description='sACN / E1.31 module for easy handling of DMX data over ethernet',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -13,7 +13,6 @@ setup(
     author='Hundemeier',
     author_email='hundemeier99@gmail.com',
     license='MIT License',
-    # packages=['sacn', 'sacn.messages', 'sacn.receiving', 'sacn.sending'],
     packages=find_packages(),
     keywords=['sacn e131 e1.31 dmx'],
     classifiers=[
