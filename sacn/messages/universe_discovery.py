@@ -18,7 +18,7 @@ class UniverseDiscoveryPacket(RootLayer):
         self.sourceName: str = sourceName
         self.page: int = page
         self.lastPage: int = lastPage
-        self.universes: list = universes
+        self.universes: tuple = universes
         super().__init__((len(universes) * 2) + 120, cid, VECTOR_ROOT_E131_EXTENDED)
 
     @property
