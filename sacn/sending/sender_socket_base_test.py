@@ -1,0 +1,24 @@
+# This file is under MIT license. The license file can be obtained in the root directory of this module.
+
+import pytest
+from sacn.sending.sender_socket_base import SenderSocketBase, SenderSocketListener
+
+
+def test_abstract_sender_socket_listener():
+    listener = SenderSocketListener()
+    with pytest.raises(NotImplementedError):
+        listener.on_periodic_callback()
+
+
+def test_abstract_sender_socket_base():
+    socket = SenderSocketBase(None)
+    with pytest.raises(NotImplementedError):
+        socket.start()
+    with pytest.raises(NotImplementedError):
+        socket.stop()
+    with pytest.raises(NotImplementedError):
+        socket.send_unicast(bytearray(), 'test')
+    with pytest.raises(NotImplementedError):
+        socket.send_multicast(bytearray(), 'test', 12)
+    with pytest.raises(NotImplementedError):
+        socket.send_broadcast(bytearray())
