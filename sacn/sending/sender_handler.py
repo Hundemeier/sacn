@@ -1,5 +1,6 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
+from typing import Dict
 from sacn.messages.universe_discovery import UniverseDiscoveryPacket
 from sacn.messages.sync_packet import SyncPacket
 from sacn.messages.data_packet import calculate_multicast_addr
@@ -13,7 +14,7 @@ E131_E131_UNIVERSE_DISCOVERY_INTERVAL = 10
 
 class SenderHandler(SenderSocketListener):
     # TODO: start using type CID instead of tuple
-    def __init__(self, cid: tuple, source_name: str, outputs: dict[int, Output], bind_address: str, bind_port: int, fps: int, socket: SenderSocketBase = None):
+    def __init__(self, cid: tuple, source_name: str, outputs: Dict[int, Output], bind_address: str, bind_port: int, fps: int, socket: SenderSocketBase = None):
         """
         This is a private class and should not be used elsewhere. It handles the sender state with sACN specific values.
         Uses a UDP sender socket with the given bind-address and -port, if the socket was not provided (i.e. None).
@@ -27,7 +28,7 @@ class SenderHandler(SenderSocketListener):
         self._source_name = source_name
         self.universe_discovery: bool = True
         self._last_time_universe_discover: float = 0
-        self._outputs: dict[int, Output] = outputs
+        self._outputs: Dict[int, Output] = outputs
         self.manual_flush: bool = False
         self._sync_sequence = 0
 
