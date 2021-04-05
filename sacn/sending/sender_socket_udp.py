@@ -1,9 +1,10 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import socket
+import time
 import threading
 
-from sacn.sending.sender_socket_base import SenderSocketBase
+from sacn.sending.sender_socket_base import SenderSocketBase, SenderSocketListener
 
 THREAD_NAME = 'sACN sending/sender thread'
 DEFAULT_PORT = 5568
@@ -27,7 +28,7 @@ class SenderSocketUDP(SenderSocketBase):
                                                     socket.SOCK_DGRAM)  # UDP
         try:
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        except:  # noqa: E722 Not all systems support multiple sockets on the same port and interface
+        except socket.error:  # Not all systems support multiple sockets on the same port and interface
             pass
 
         try:
