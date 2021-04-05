@@ -1,6 +1,7 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import logging
+from sacn.messages.root_layer import RootLayer
 
 
 class SenderSocketListener:
@@ -8,7 +9,7 @@ class SenderSocketListener:
     Base class for listener of a SenderSocketListener.
     """
 
-    def on_periodic_callback(self) -> None:
+    def on_periodic_callback(self, time: float) -> None:
         raise NotImplementedError
 
 
@@ -27,11 +28,11 @@ class SenderSocketBase:
     def stop(self) -> None:
         raise NotImplementedError
 
-    def send_unicast(self, data: bytearray, destination: str) -> None:
+    def send_unicast(self, data: RootLayer, destination: str) -> None:
         raise NotImplementedError
 
-    def send_multicast(self, data: bytearray, destination: str, ttl: int) -> None:
+    def send_multicast(self, data: RootLayer, destination: str, ttl: int) -> None:
         raise NotImplementedError
 
-    def send_broadcast(self, data: bytearray) -> None:
+    def send_broadcast(self, data: RootLayer) -> None:
         raise NotImplementedError

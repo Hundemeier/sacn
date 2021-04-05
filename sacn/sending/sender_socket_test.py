@@ -1,6 +1,7 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
-
+import copy
+from sacn.messages.root_layer import RootLayer
 from sacn.sending.sender_socket_base import SenderSocketBase
 
 
@@ -9,9 +10,9 @@ class SenderSocketTest(SenderSocketBase):
         super().__init__(listener)
         self.start_called: bool = False
         self.stop_called: bool = False
-        self.send_unicast_called: (bytearray, str) = None
-        self.send_multicast_called: (bytearray, str, int) = None
-        self.send_broadcast_called: (bytearray) = None
+        self.send_unicast_called: (RootLayer, str) = None
+        self.send_multicast_called: (RootLayer, str, int) = None
+        self.send_broadcast_called: RootLayer = None
 
     def start(self) -> None:
         self.start_called = True
@@ -19,14 +20,14 @@ class SenderSocketTest(SenderSocketBase):
     def stop(self) -> None:
         self.stop_called = True
 
-    def send_unicast(self, data: bytearray, destination: str) -> None:
-        self.send_unicast_called = (data, destination)
+    def send_unicast(self, data: RootLayer, destination: str) -> None:
+        self.send_unicast_called = (copy.deepcopy(data), copy.deepcopy(destination))
 
-    def send_multicast(self, data: bytearray, destination: str, ttl: int) -> None:
-        self.send_multicast_called = (data, destination, ttl)
+    def send_multicast(self, data: RootLayer, destination: str, ttl: int) -> None:
+        self.send_multicast_called = (copy.deepcopy(data), copy.deepcopy(destination), ttl)
 
-    def send_broadcast(self, data: bytearray) -> None:
-        self.send_broadcast_called = (data)
+    def send_broadcast(self, data: RootLayer) -> None:
+        self.send_broadcast_called = copy.deepcopy(data)
 
-    def call_on_periodic_callback(self) -> None:
-        self._listener.on_periodic_callback()
+    def call_on_periodic_callback(self, time: float) -> None:
+        self._listener.on_periodic_callback(time)

@@ -4,6 +4,7 @@ import socket
 import time
 import threading
 
+from sacn.messages.root_layer import RootLayer
 from sacn.sending.sender_socket_base import SenderSocketBase, SenderSocketListener
 
 THREAD_NAME = 'sACN sending/sender thread'
@@ -52,7 +53,7 @@ class SenderSocketUDP(SenderSocketBase):
         self._enabled_flag = True
         while self._enabled_flag:
             time_stamp = time.time()
-            self._listener.on_periodic_callback()
+            self._listener.on_periodic_callback(time_stamp)
             time_to_sleep = (1 / self.fps) - (time.time() - time_stamp)
             if time_to_sleep < 0:  # if time_to_sleep is negative (because the loop has too much work to do) set it to 0
                 time_to_sleep = 0
@@ -67,17 +68,18 @@ class SenderSocketUDP(SenderSocketBase):
         """
         self._enabled_flag = False
 
-    def send_unicast(self, data: bytearray, destination: str) -> None:
-        self.send_packet(data, destination)
+    def send_unicast(self, data: RootLayer, destination: str) -> None:
+        self.send_packet(data.getBytes(), destination)
 
-    def send_multicast(self, data: bytearray, destination: str, ttl: int) -> None:
+    def send_multicast(self, data: RootLayer, destination: str, ttl: int) -> None:
         # make socket multicast-aware: (set TTL)
         self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
-        self.send_packet(data, destination)
+        self.send_packet(data.getBytes(), destination)
 
-    def send_broadcast(self, data: bytearray) -> None:
+    def send_broadcast(self, data: RootLayer) -> None:
+        # hint: on windows a bind address must be set, to use broadcast
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.send_packet(data, destination='<broadcast>')
+        self.send_packet(data.getBytes(), destination='<broadcast>')
 
     def send_packet(self, data: bytearray, destination: str) -> None:
         try:
