@@ -1,13 +1,15 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import pytest
+from sacn.messages.data_types import CID
 from sacn.messages.sync_packet import SyncPacket
+from sacn.messages.data_types_test import create_valid_cid
 from sacn.messages.general_test import property_number_range_check
 
 
 def test_constructor():
     # positive tests
-    cid = tuple(range(0, 16))
+    cid = create_valid_cid()
     syncAddr = 12
     sequence = 127
     packet = SyncPacket(cid, syncAddr, sequence)
@@ -17,30 +19,30 @@ def test_constructor():
     assert packet.sequence == sequence
     # using wrong values for CID
     with pytest.raises(ValueError):
-        SyncPacket(tuple(range(0, 17)), syncAddr, sequence)
+        SyncPacket(CID(tuple(range(0, 17))), syncAddr, sequence)
 
 
 def test_sync_universe():
-    packet = SyncPacket(tuple(range(0, 16)), 1, 1)
+    packet = SyncPacket(create_valid_cid(), 1, 1)
     # test property setter
     def property(i): packet.syncAddr = i
     # test constructor for the same parameter
-    def constructor(i): SyncPacket(tuple(range(0, 16)), i, 1)
+    def constructor(i): SyncPacket(create_valid_cid(), i, 1)
     property_number_range_check(1, 63999, property, constructor)
 
 
 def test_sequence():
-    packet = SyncPacket(tuple(range(0, 16)), 1, 1)
+    packet = SyncPacket(create_valid_cid(), 1, 1)
     # test property setter
     def property(i): packet.sequence = i
     # test constructor for the same parameter
-    def constructor(i): SyncPacket(tuple(range(0, 16)), 1, i)
+    def constructor(i): SyncPacket(create_valid_cid(), 1, i)
     property_number_range_check(0, 255, property, constructor)
 
 
 def test_sequence_increment():
     # Test that the sequence number can be increased and the wrap around at 255 is correct
-    built_packet = SyncPacket(tuple(range(0, 16)), 1, 1)
+    built_packet = SyncPacket(create_valid_cid(), 1, 1)
     built_packet.sequence = 78
     built_packet.sequence_increase()
     assert built_packet.sequence == 79
@@ -51,7 +53,7 @@ def test_sequence_increment():
 
 def test_get_bytes():
     # Use the example present in the E1.31 spec in appendix B
-    cid = (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
+    cid = CID((0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e))
     syncAddr = 7962
     sequence = 67  # Note: the spec states 367, which is a mistake in the spec
     packet = SyncPacket(cid, syncAddr, sequence)
@@ -111,7 +113,7 @@ def test_parse_sync_packet():
     ]
     packet = SyncPacket.make_sync_packet(raw_data)
     assert packet.length == 49
-    assert packet.cid == (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
+    assert packet.cid.value == (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
     assert packet.sequence == 67
     assert packet.syncAddr == 7962
 
@@ -126,6 +128,6 @@ def test_parse_sync_packet():
 
 
 def test_byte_construction_and_deconstruction():
-    built_packet = SyncPacket(tuple(range(0, 16)), 12, 127)
+    built_packet = SyncPacket(create_valid_cid(), 12, 127)
     read_packet = SyncPacket.make_sync_packet(built_packet.getBytes())
     assert built_packet == read_packet

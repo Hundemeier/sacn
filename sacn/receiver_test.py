@@ -3,6 +3,7 @@
 import pytest
 import sacn
 from sacn.messages.data_packet import DataPacket
+from sacn.messages.data_types_test import create_valid_cid
 from sacn.receiving.receiver_socket_test import ReceiverSocketTest
 
 
@@ -33,7 +34,7 @@ def test_listen_on_availability_change():
         called = True
 
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))
@@ -46,7 +47,7 @@ def test_listen_on_dmx_data_change():
     receiver, socket = get_receiver()
 
     packetSend = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))
@@ -78,7 +79,7 @@ def test_possible_universes():
 
     assert receiver.get_possible_universes() == ()
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))

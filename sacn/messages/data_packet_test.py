@@ -4,7 +4,9 @@ import pytest
 from sacn.messages.data_packet import \
     calculate_multicast_addr, \
     DataPacket
+from sacn.messages.data_types import CID
 from sacn.messages.general_test import property_number_range_check
+from sacn.messages.data_types_test import create_valid_cid
 
 
 def test_calculate_multicast_addr():
@@ -12,15 +14,15 @@ def test_calculate_multicast_addr():
     universe_63999 = '239.255.249.255'
     assert calculate_multicast_addr(1) == universe_1
     assert calculate_multicast_addr(63999) == universe_63999
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     assert packet.calculate_multicast_addr() == universe_1
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=63999)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=63999)
     assert packet.calculate_multicast_addr() == universe_63999
 
 
 def test_byte_construction_and_deconstruction():
     built_packet = DataPacket(
-        cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
+        cid=create_valid_cid(),
         sourceName='Test Name',
         universe=62000,
         dmxData=tuple(x % 256 for x in range(0, 512)),
@@ -40,10 +42,10 @@ def test_property_adjustment_and_deconstruction():
     # Converting DataPacket -> bytes -> DataPacket should produce the same result,
     # but with changed properties that are not the default
     built_packet = DataPacket(
-        cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
+        cid=create_valid_cid(),
         sourceName='Test Name',
         universe=30)
-    built_packet.cid = tuple(range(16))
+    built_packet.cid = CID(tuple(range(16)))
     built_packet.sourceName = '2nd Test Name'
     built_packet.universe = 31425
     built_packet.dmxData = ((200,) + tuple(range(255, 0, -1)) + tuple(range(255)) + (0,))
@@ -55,7 +57,7 @@ def test_property_adjustment_and_deconstruction():
     built_packet.syncAddr = 34003
     built_packet.dmxStartCode = 8
     read_packet = DataPacket.make_data_packet(built_packet.getBytes())
-    assert read_packet.cid == tuple(range(16))
+    assert read_packet.cid == CID(tuple(range(16)))
     assert read_packet.sourceName == '2nd Test Name'
     assert read_packet.universe == 31425
     assert read_packet.dmxData == ((200,) + tuple(range(255, 0, -1)) + tuple(range(255)) + (0,))
@@ -71,7 +73,7 @@ def test_property_adjustment_and_deconstruction():
 def test_sequence_increment():
     # Test that the sequence number can be increased and the wrap around at 255 is correct
     built_packet = DataPacket(
-        cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
+        cid=create_valid_cid(),
         sourceName='Test Name',
         universe=30)
     built_packet.sequence = 78
@@ -139,7 +141,7 @@ def test_parse_data_packet():
     packet = DataPacket.make_data_packet(raw_data)
     assert packet.length == 638
     assert packet._vector == (0x00, 0x00, 0x00, 0x04)
-    assert packet.cid == (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
+    assert packet.cid.value == (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
     assert packet.sourceName == 'Source_A'
     assert packet.priority == 100
     assert packet.syncAddr == 7962
@@ -163,7 +165,7 @@ def test_parse_data_packet():
 
 def test_str():
     packet = DataPacket(
-        cid=(16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8),
+        cid=CID((16, 1, 15, 2, 14, 3, 13, 4, 12, 5, 11, 6, 10, 7, 9, 8)),
         sourceName='Test',
         universe=62000,
         priority=195,
@@ -174,7 +176,7 @@ def test_str():
 def test_sourceName():
     # test string has 25 characters but is 64 bytes (1 too many) when UTF-8 encoded
     overlength_string = "𔑑覱֪I𤵎⠣Ķ'𫳪爓Û:𢏴㓑ò4𰬀鿹џ>𖬲膬ЩJ𞄇"
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test property setter
     with pytest.raises(TypeError):
         packet.sourceName = 0x33
@@ -182,56 +184,56 @@ def test_sourceName():
         packet.sourceName = overlength_string
     # test constructor
     with pytest.raises(ValueError):
-        DataPacket(cid=tuple(range(0, 16)), sourceName=overlength_string, universe=1)
+        DataPacket(cid=create_valid_cid(), sourceName=overlength_string, universe=1)
 
 
 def test_priority():
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test property setter
     def property(i): packet.priority = i
     # test constructor for the same parameter
-    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, priority=i)
+    def constructor(i): DataPacket(create_valid_cid(), sourceName="", universe=1, priority=i)
     property_number_range_check(0, 200, property, constructor)
 
 
 def test_universe():
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test property setter
     def property(i): packet.universe = i
     # test constructor for the same parameter
-    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=i)
+    def constructor(i): DataPacket(create_valid_cid(), sourceName="", universe=i)
     property_number_range_check(1, 63999, property, constructor)
 
 
 def test_sync_universe():
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test property setter
     def property(i): packet.syncAddr = i
     # test constructor for the same parameter
-    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, sync_universe=i)
+    def constructor(i): DataPacket(create_valid_cid(), sourceName="", universe=1, sync_universe=i)
     property_number_range_check(0, 63999, property, constructor)
 
 
 def test_sequence():
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test property setter
     def property(i): packet.sequence = i
     # test constructor for the same parameter
-    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, sequence=i)
+    def constructor(i): DataPacket(create_valid_cid(), sourceName="", universe=1, sequence=i)
     property_number_range_check(0, 255, property, constructor)
 
 
 def test_dmx_start_code():
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test property setter
     def property(i): packet.dmxStartCode = i
     # test constructor for the same parameter
-    def constructor(i): DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxStartCode=i)
+    def constructor(i): DataPacket(create_valid_cid(), sourceName="", universe=1, dmxStartCode=i)
     property_number_range_check(0, 255, property, constructor)
 
 
 def test_dmx_data():
-    packet = DataPacket(cid=tuple(range(0, 16)), sourceName="", universe=1)
+    packet = DataPacket(cid=create_valid_cid(), sourceName="", universe=1)
     # test valid lengths
     for i in range(0, 512):
         data = tuple(x % 256 for x in range(0, i))
@@ -240,7 +242,7 @@ def test_dmx_data():
         assert len(packet.dmxData) == 512
         assert packet.length == 638
         # test constructor for the same parameter
-        packet2 = DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
+        packet2 = DataPacket(create_valid_cid(), sourceName="", universe=1, dmxData=data)
         assert len(packet2.dmxData) == 512
         assert packet2.length == 638
 
@@ -248,7 +250,7 @@ def test_dmx_data():
         with pytest.raises(ValueError):
             packet.dmxData = data
         with pytest.raises(ValueError):
-            DataPacket(tuple(range(0, 16)), sourceName="", universe=1, dmxData=data)
+            DataPacket(create_valid_cid(), sourceName="", universe=1, dmxData=data)
 
     # test for non-int and out of range values values in tuple
     execute_universes_expect(tuple('string'))

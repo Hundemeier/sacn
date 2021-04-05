@@ -5,6 +5,7 @@ This represents a framing layer and a DMP layer from the E1.31 Standard
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
 
+from sacn.messages.data_types import CID
 from sacn.messages.root_layer import \
     VECTOR_DMP_SET_PROPERTY, \
     VECTOR_E131_DATA_PACKET, \
@@ -16,7 +17,7 @@ from sacn.messages.root_layer import \
 
 
 class DataPacket(RootLayer):
-    def __init__(self, cid: tuple, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
+    def __init__(self, cid: CID, sourceName: str, universe: int, dmxData: tuple = (), priority: int = 100,
                  sequence: int = 0, streamTerminated: bool = False, previewData: bool = False,
                  forceSync: bool = False, sync_universe: int = 0, dmxStartCode: int = 0x00):
         super().__init__(126 + len(dmxData), cid, VECTOR_ROOT_E131_DATA)
@@ -33,7 +34,7 @@ class DataPacket(RootLayer):
 
     def __str__(self):
         return f'sACN DataPacket: Universe: {self._universe}, Priority: {self._priority}, Sequence: {self._sequence}, ' \
-               f'CID: {self._cid}'
+               f'CID: {self.cid.value}'
 
     @property
     def sourceName(self) -> str:
@@ -198,7 +199,7 @@ class DataPacket(RootLayer):
            raw_data[117] != VECTOR_DMP_SET_PROPERTY:  # REMEMBER: when slicing: [inclusive:exclusive]
             raise TypeError('Some of the vectors in the given raw data are not compatible to the E131 Standard!')
 
-        tmpPacket = DataPacket(cid=tuple(raw_data[22:38]), sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
+        tmpPacket = DataPacket(cid=CID(tuple(raw_data[22:38])), sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
                                universe=byte_tuple_to_int(raw_data[113:115]))  # high byte first
         tmpPacket.priority = raw_data[108]
         tmpPacket.syncAddr = byte_tuple_to_int(raw_data[109:111])

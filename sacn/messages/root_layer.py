@@ -6,6 +6,8 @@ This represents a root layer of an ACN Message.
 Information about sACN: http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
 
+from sacn.messages.data_types import CID
+
 _FIRST_INDEX = \
     (0, 0x10, 0, 0, 0x41, 0x53, 0x43, 0x2d, 0x45,
      0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00)
@@ -22,12 +24,14 @@ VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST = (0, 0, 0, 0x1)
 
 
 class RootLayer:
-    def __init__(self, length: int, cid: tuple, vector: tuple):
+    def __init__(self, length: int, cid: CID, vector: tuple):
+        if type(cid) is not CID:
+            raise TypeError(f'the type of cid was not CID. Type was {type(cid)}')
         self.length = length
         if(len(vector) != 4):
             raise ValueError('the length of the vector is not 4!')
         self._vector = vector
-        self.cid = cid
+        self.cid: CID = cid
 
     def getBytes(self) -> list:
         '''Returns the Root layer as list with bytes'''
@@ -39,7 +43,7 @@ class RootLayer:
         tmpList.extend(make_flagsandlength(length))
 
         tmpList.extend(self._vector)
-        tmpList.extend(self._cid)
+        tmpList.extend(self.cid.value)
         return tmpList
 
     @property
@@ -49,18 +53,6 @@ class RootLayer:
     @length.setter
     def length(self, value: int):
         self._length = value & 0xFFF  # only use the least 12-Bit
-
-    @property
-    def cid(self) -> tuple:
-        return self._cid
-
-    @cid.setter
-    def cid(self, cid: tuple):
-        if type(cid) is not tuple:
-            raise TypeError(f'cid must be a 16 byte tuple! value was {cid}')
-        if (len(cid) != 16 or not all((isinstance(x, int) and (0 <= x <= 255)) for x in cid)):
-            raise ValueError(f'cid must be a 16 byte tuple! value was {cid}')
-        self._cid = cid
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:

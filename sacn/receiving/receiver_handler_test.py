@@ -3,6 +3,7 @@
 import pytest
 from sacn.messages.data_packet import DataPacket
 from sacn.receiving.receiver_handler import ReceiverHandler, ReceiverHandlerListener, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
+from sacn.messages.data_types_test import create_valid_cid
 from sacn.receiving.receiver_socket_test import ReceiverSocketTest
 
 
@@ -46,7 +47,7 @@ def test_first_packet():
     assert listener.on_availability_change_universe is None
     assert listener.on_dmx_data_change_packet is None
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))
@@ -63,7 +64,7 @@ def test_first_packet_stream_terminated():
     assert listener.on_availability_change_universe is None
     assert listener.on_dmx_data_change_packet is None
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16)),
@@ -92,7 +93,7 @@ def test_invalid_priority():
     _, listener, socket = get_handler()
     assert listener.on_dmx_data_change_packet is None
     packet1 = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16)),
@@ -101,7 +102,7 @@ def test_invalid_priority():
     socket.call_on_data(bytes(packet1.getBytes()), 0)
     assert listener.on_dmx_data_change_packet.__dict__ == packet1.__dict__
     packet2 = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16)),
@@ -118,7 +119,7 @@ def test_invalid_sequence():
         _, listener, socket = get_handler()
         assert listener.on_dmx_data_change_packet is None
         packet1 = DataPacket(
-            cid=tuple(range(0, 16)),
+            cid=create_valid_cid(),
             sourceName='Test',
             universe=1,
             dmxData=tuple(range(0, 16)),
@@ -127,7 +128,7 @@ def test_invalid_sequence():
         socket.call_on_data(bytes(packet1.getBytes()), 0)
         assert listener.on_dmx_data_change_packet.__dict__ == packet1.__dict__
         packet2 = DataPacket(
-            cid=tuple(range(0, 16)),
+            cid=create_valid_cid(),
             sourceName='Test',
             universe=1,
             # change DMX data to simulate data from another source
@@ -154,7 +155,7 @@ def test_possible_universes():
     handler, _, socket = get_handler()
     assert handler.get_possible_universes() == []
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))
@@ -177,7 +178,7 @@ def test_universe_timeout():
     assert listener.on_availability_change_changed is None
     assert listener.on_availability_change_universe is None
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))
@@ -198,7 +199,7 @@ def test_universe_stream_terminated():
     assert listener.on_availability_change_changed is None
     assert listener.on_availability_change_universe is None
     packet = DataPacket(
-        cid=tuple(range(0, 16)),
+        cid=create_valid_cid(),
         sourceName='Test',
         universe=1,
         dmxData=tuple(range(0, 16))
@@ -219,7 +220,7 @@ def test_abstract_receiver_handler_listener():
         listener.on_availability_change(1, 'test')
     with pytest.raises(NotImplementedError):
         listener.on_dmx_data_change(DataPacket(
-            cid=tuple(range(0, 16)),
+            cid=create_valid_cid(),
             sourceName='Test',
             universe=1
         ))

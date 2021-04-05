@@ -1,6 +1,7 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import pytest
+from sacn.messages.data_types import CID
 from sacn.messages.root_layer import \
     byte_tuple_to_int, \
     int_to_bytes, \
@@ -35,8 +36,8 @@ def test_byte_tuple_to_int():
 
 
 def test_eq():
-    cid = tuple(range(0, 16))
-    cid2 = tuple(range(1, 17))
+    cid = CID(tuple(range(0, 16)))
+    cid2 = CID(tuple(range(1, 17)))
     vec = tuple(range(0, 4))
     vec2 = tuple(range(1, 5))
     assert RootLayer(0, cid, vec) == RootLayer(0, cid, vec)
@@ -54,47 +55,28 @@ def test_make_flagsandlength():
 
 
 def test_cid():
-    cid1 = tuple(range(0, 16))
-    cid2 = tuple(range(1, 17))
+    cid1 = CID(tuple(range(0, 16)))
+    cid2 = CID(tuple(range(1, 17)))
     vector1 = (1, 2, 3, 4)
-
-    def char_range(char1, char2):
-        """Generates the characters from `c1` to `c2`, ranged just like python."""
-        for c in range(ord(char1), ord(char2)):
-            yield chr(c)
 
     # test constructor
     packet = RootLayer(123, cid1, vector1)
     assert packet.cid == cid1
+    # wrong type for CID
+    with pytest.raises(TypeError):
+        RootLayer(0, tuple(range(0, 16)), ())
+
+    # test setter
     packet.cid = cid2
     assert packet.cid == cid2
-    # test that constructor validates cid
-    with pytest.raises(ValueError):
-        RootLayer(length=123, cid=tuple(char_range('A', 'Q')), vector=vector1)
-    # test that CID must be 16 elements
-    with pytest.raises(ValueError):
-        packet.cid = tuple(range(0, 17))
-    with pytest.raises(ValueError):
-        packet.cid = tuple(range(0, 15))
-    # test that CID only contains valid byte values
-    with pytest.raises(ValueError):
-        packet.cid = tuple(range(250, 266))
-    with pytest.raises(ValueError):
-        packet.cid = tuple(char_range('b', 'r'))
-    # test that CID is a tuple
-    with pytest.raises(TypeError):
-        packet.cid = range(0, 16)
 
 
 def test_root_layer_bytes():
-    cid = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    cid = CID((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
     vector = (1, 2, 3, 4)
     # test that the vector length must be 4
     with pytest.raises(ValueError):
         RootLayer(0, cid, ())
-    # test that the cid length must be 16
-    with pytest.raises(ValueError):
-        RootLayer(0, (), vector)
     packet = RootLayer(0x123456, cid, vector)
     shouldBe = [
         # initial static vector
@@ -106,7 +88,7 @@ def test_root_layer_bytes():
     # vector
     shouldBe.extend(vector)
     # cid
-    shouldBe.extend(cid)
+    shouldBe.extend(cid.value)
     assert packet.getBytes() == shouldBe
 
 

@@ -3,6 +3,7 @@ This class represents an universe discovery packet of the E1.31 Standard.
 """
 from typing import List
 
+from sacn.messages.data_types import CID
 from sacn.messages.root_layer import \
     VECTOR_ROOT_E131_EXTENDED, \
     VECTOR_E131_EXTENDED_DISCOVERY, \
@@ -14,7 +15,7 @@ from sacn.messages.root_layer import \
 
 
 class UniverseDiscoveryPacket(RootLayer):
-    def __init__(self, cid: tuple, sourceName: str, universes: tuple, page: int = 0, lastPage: int = 0):
+    def __init__(self, cid: CID, sourceName: str, universes: tuple, page: int = 0, lastPage: int = 0):
         self.sourceName: str = sourceName
         self.page: int = page
         self.lastPage: int = lastPage
@@ -120,14 +121,14 @@ class UniverseDiscoveryPacket(RootLayer):
         # remember: UDL has 8 bytes plus the universes
         # remember: Flags and length includes a 12-bit length field
         universes = convert_raw_data_to_universes(raw_data[120:120 + length])
-        tmpPacket = UniverseDiscoveryPacket(cid=tuple(raw_data[22:38]), sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
+        tmpPacket = UniverseDiscoveryPacket(cid=CID(tuple(raw_data[22:38])), sourceName=bytes(raw_data[44:108]).decode('utf-8').replace('\0', ''),
                                             universes=universes)
         tmpPacket._page = raw_data[118]
         tmpPacket._lastPage = raw_data[119]
         return tmpPacket
 
     @staticmethod
-    def make_multiple_uni_disc_packets(cid: tuple, sourceName: str, universes: list) -> List['UniverseDiscoveryPacket']:
+    def make_multiple_uni_disc_packets(cid: CID, sourceName: str, universes: list) -> List['UniverseDiscoveryPacket']:
         """
         Creates a list with universe discovery packets based on the given data. It creates automatically enough packets
         for the given universes list.

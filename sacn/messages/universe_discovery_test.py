@@ -1,13 +1,15 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
 import pytest
+from sacn.messages.data_types import CID
 from sacn.messages.universe_discovery import UniverseDiscoveryPacket
+from sacn.messages.data_types_test import create_valid_cid
 from sacn.messages.general_test import property_number_range_check
 
 
 def test_constructor():
     # positive tests
-    cid = tuple(range(0, 16))
+    cid = create_valid_cid()
     sourceName = 'Test'
     universes = tuple(range(0, 512))
     page = 0
@@ -21,13 +23,13 @@ def test_constructor():
     assert packet.lastPage == lastPage
     # using wrong values for CID
     with pytest.raises(ValueError):
-        UniverseDiscoveryPacket(tuple(range(0, 17)), sourceName, universes)
+        UniverseDiscoveryPacket(CID(tuple(range(0, 17))), sourceName, universes)
 
 
 def test_sourceName():
     # test string has 25 characters but is 64 bytes (1 too many) when UTF-8 encoded
     overlength_string = "𔑑覱֪I𤵎⠣Ķ'𫳪爓Û:𢏴㓑ò4𰬀鿹џ>𖬲膬ЩJ𞄇"
-    packet = UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', ())
+    packet = UniverseDiscoveryPacket(create_valid_cid(), 'Test', ())
     # test property setter
     with pytest.raises(TypeError):
         packet.sourceName = 0x33
@@ -35,35 +37,35 @@ def test_sourceName():
         packet.sourceName = overlength_string
     # test constructor
     with pytest.raises(ValueError):
-        packet = UniverseDiscoveryPacket(tuple(range(0, 16)), overlength_string, ())
+        packet = UniverseDiscoveryPacket(create_valid_cid(), overlength_string, ())
 
 
 def test_page():
-    packet = UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', ())
+    packet = UniverseDiscoveryPacket(create_valid_cid(), 'Test', ())
     # test property setter
     def property(i): packet.page = i
     # test constructor for the same parameter
-    def constructor(i): UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', (), i)
+    def constructor(i): UniverseDiscoveryPacket(create_valid_cid(), 'Test', (), i)
     property_number_range_check(0, 255, property, constructor)
 
 
 def test_last_page():
-    packet = UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', ())
+    packet = UniverseDiscoveryPacket(create_valid_cid(), 'Test', ())
     # test property setter
     def property(i): packet.lastPage = i
     # test constructor for the same parameter
-    def constructor(i): UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', (), 0, i)
+    def constructor(i): UniverseDiscoveryPacket(create_valid_cid(), 'Test', (), 0, i)
     property_number_range_check(0, 255, property, constructor)
 
 
 def test_universes():
-    packet = UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', ())
+    packet = UniverseDiscoveryPacket(create_valid_cid(), 'Test', ())
 
     def execute_universes_expect(universes: tuple):
         with pytest.raises(ValueError):
             packet.universes = universes
         with pytest.raises(ValueError):
-            UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', universes)
+            UniverseDiscoveryPacket(create_valid_cid(), 'Test', universes)
 
     # test valid lengths
     for i in range(1, 513):
@@ -72,7 +74,7 @@ def test_universes():
         packet.universes = universes
         assert packet.length == 120 + (2 * len(universes))
         # test constructor for the same parameter
-        UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', universes)
+        UniverseDiscoveryPacket(create_valid_cid(), 'Test', universes)
 
     # test that the universes list is sorted
     packet.universes = (3, 1, 2)
@@ -89,7 +91,7 @@ def test_universes():
 def test_make_multiple_uni_disc_packets():
     # test with a list that spawns three packets
     universes = list(range(0, 1026))
-    packets = UniverseDiscoveryPacket.make_multiple_uni_disc_packets(tuple(range(0, 16)), 'Test', universes)
+    packets = UniverseDiscoveryPacket.make_multiple_uni_disc_packets(create_valid_cid(), 'Test', universes)
     assert len(packets) == 3
     assert packets[0].universes == tuple(range(0, 512))
     assert packets[1].universes == tuple(range(512, 1024))
@@ -102,7 +104,7 @@ def test_make_multiple_uni_disc_packets():
     assert packets[2].lastPage == 2
     # test with a list that spawns one packet
     universes = list(range(0, 2))
-    packets = UniverseDiscoveryPacket.make_multiple_uni_disc_packets(tuple(range(0, 16)), 'Test', universes)
+    packets = UniverseDiscoveryPacket.make_multiple_uni_disc_packets(create_valid_cid(), 'Test', universes)
     assert len(packets) == 1
     assert packets[0].universes == tuple(universes)
     assert packets[0].page == 0
@@ -110,7 +112,7 @@ def test_make_multiple_uni_disc_packets():
 
 
 def test_get_bytes():
-    cid = (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
+    cid = CID((0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e))
     packet = UniverseDiscoveryPacket(cid, 'Source_A', (1, 2, 3), 0, 1)
     assert packet.getBytes() == [
         # preamble size
@@ -187,7 +189,7 @@ def test_parse_sync_packet():
     ]
     packet = UniverseDiscoveryPacket.make_universe_discovery_packet(raw_data)
     assert packet.length == 126
-    assert packet.cid == (0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e)
+    assert packet.cid == CID((0xef, 0x07, 0xc8, 0xdd, 0x00, 0x64, 0x44, 0x01, 0xa3, 0xa2, 0x45, 0x9e, 0xf8, 0xe6, 0x14, 0x3e))
     assert packet.sourceName == 'Source_A'
     assert packet.page == 0
     assert packet.lastPage == 1
@@ -208,6 +210,6 @@ def test_parse_sync_packet():
 
 
 def test_byte_construction_and_deconstruction():
-    built_packet = UniverseDiscoveryPacket(tuple(range(0, 16)), 'Test', tuple(range(0, 512)), 0, 1)
+    built_packet = UniverseDiscoveryPacket(create_valid_cid(), 'Test', tuple(range(0, 512)), 0, 1)
     read_packet = UniverseDiscoveryPacket.make_universe_discovery_packet(built_packet.getBytes())
     assert built_packet == read_packet
