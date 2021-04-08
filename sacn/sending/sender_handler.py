@@ -80,6 +80,7 @@ class SenderHandler(SenderSocketListener):
             output._packet.syncAddr = sync_universe  # temporarily set the sync universe
             self.send_out(output, current_time)
             output._packet.syncAddr = 0
+
         sync_packet = SyncPacket(cid=self.__CID, syncAddr=sync_universe, sequence=self._sync_sequence)
         # Increment sequence number for next time.
         self._sync_sequence += 1
