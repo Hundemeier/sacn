@@ -2,7 +2,7 @@
 
 import socket
 import threading
-
+import time
 from sacn.receiving.receiver_socket_base import ReceiverSocketBase, ReceiverSocketListener
 
 THREAD_NAME = 'sACN input/receiver thread'
@@ -47,14 +47,14 @@ class ReceiverSocketUDP(ReceiverSocketBase):
         self._enabled_flag = True
         while self._enabled_flag:
             # before receiving: invoke periodic callback
-            self._listener.on_periodic_callback()
+            self._listener.on_periodic_callback(time.time())
             # receive the data
             try:
                 raw_data = list(self._socket.recv(2048))  # greater than 1144 because the longest possible packet
                 # in the sACN standard is the universe discovery packet with a max length of 1144
             except socket.timeout:
                 continue  # if a timeout happens just go through while from the beginning
-            self._listener.on_data(raw_data)
+            self._listener.on_data(raw_data, time.time())
 
         self._logger.info(f'Stopped {THREAD_NAME}')
 

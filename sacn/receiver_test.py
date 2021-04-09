@@ -38,7 +38,7 @@ def test_listen_on_availability_change():
         universe=1,
         dmxData=tuple(range(0, 16))
     )
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert called
 
 
@@ -60,7 +60,7 @@ def test_listen_on_dmx_data_change():
         nonlocal called
         called = True
 
-    socket.call_on_data(bytes(packetSend.getBytes()))
+    socket.call_on_data(bytes(packetSend.getBytes()), 0)
     assert called
 
 
@@ -83,7 +83,7 @@ def test_possible_universes():
         universe=1,
         dmxData=tuple(range(0, 16))
     )
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert receiver.get_possible_universes() == tuple([1])
 
 
