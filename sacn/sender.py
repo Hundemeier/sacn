@@ -7,7 +7,7 @@ http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 
 import random
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from sacn.messages.data_packet import DataPacket
 from sacn.sending.output import Output
@@ -133,7 +133,7 @@ class sACNsender:
         tmp_output._packet.option_StreamTerminated = False
         self._outputs[universe_to] = tmp_output
 
-    def __getitem__(self, item: int) -> Output:
+    def __getitem__(self, item: int) -> Optional[Output]:
         try:
             return self._outputs[item]
         except KeyError:
