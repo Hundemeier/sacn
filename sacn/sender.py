@@ -6,18 +6,20 @@ http://tsp.esta.org/tsp/documents/docs/E1-31-2016.pdf
 """
 
 import random
+import time
 from typing import Dict, List
 
 from sacn.messages.data_packet import DataPacket
 from sacn.sending.output import Output
-from sacn.sending.output_thread import OutputThread, DEFAULT_PORT
+from sacn.sending.sender_socket_base import SenderSocketBase, DEFAULT_PORT
+from sacn.sending.sender_handler import SenderHandler
 
 
 class sACNsender:
     def __init__(self, bind_address: str = '0.0.0.0', bind_port: int = DEFAULT_PORT,
                  source_name: str = 'default source name', cid: tuple = (),
                  fps: int = 30, universeDiscovery: bool = True,
-                 sync_universe: int = 63999):
+                 sync_universe: int = 63999, socket: SenderSocketBase = None):
         """
         Creates a sender object. A sender is used to manage multiple sACN universes and handles their sending.
         DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
@@ -32,38 +34,31 @@ class sACNsender:
         :param cid: the cid. If not given, a random CID will be generated.
         :param fps: the frames per second. See above explanation. Has to be >0
         :param sync_universe: universe to send sync packets on.
+        :param socket: Provide a special socket implementation if necessary. Must be derived from SenderSocketBase,
+        only use if the default socket implementation of this library is not sufficient.
         """
-        self.source_name: str = source_name
         if len(cid) != 16:
             cid = tuple(int(random.random() * 255) for _ in range(0, 16))
-        self.__CID: tuple = cid
         self._outputs: Dict[int, Output] = {}
-        self._fps = fps
-        self.bindAddress = bind_address
-        self.bind_port = bind_port
-        self._output_thread: OutputThread = None
-        self._universeDiscovery: bool = universeDiscovery
+        self._sender_handler = SenderHandler(cid, source_name, self._outputs, bind_address, bind_port, fps, socket)
+        self.universeDiscovery = universeDiscovery
         self._sync_universe: int = sync_universe
 
     @property
     def universeDiscovery(self) -> bool:
-        return self._universeDiscovery
+        return self._sender_handler.universe_discovery
 
     @universeDiscovery.setter
     def universeDiscovery(self, universeDiscovery: bool) -> None:
-        self._universeDiscovery = universeDiscovery
-        try:  # try to set the value for the output thread
-            self._output_thread.universeDiscovery = universeDiscovery
-        except AttributeError:
-            pass
+        self._sender_handler.universe_discovery = universeDiscovery
 
     @property
     def manual_flush(self) -> bool:
-        return self._output_thread.manual_flush
+        return self._sender_handler.manual_flush
 
     @manual_flush.setter
     def manual_flush(self, manual_flush: bool) -> None:
-        self._output_thread.manual_flush = manual_flush
+        self._sender_handler.manual_flush = manual_flush
 
     def flush(self, universes: List[int] = []):
         """
@@ -76,9 +71,10 @@ class sACNsender:
         for uni in universes:
             if uni not in self._outputs:
                 raise ValueError(f'Cannot flush universe {uni}, it is not active!')
-        self._output_thread.send_out_all_universes(
+        self._sender_handler.send_out_all_universes(
             self._sync_universe,
-            self._outputs if not universes else {uni: self._outputs[uni] for uni in universes}
+            self._outputs if not universes else {uni: self._outputs[uni] for uni in universes},
+            time.time()
         )
 
     def activate_output(self, universe: int) -> None:
@@ -92,7 +88,7 @@ class sACNsender:
         if universe in self._outputs:
             return
         # add new sending:
-        new_output = Output(DataPacket(cid=self.__CID, sourceName=self.source_name, universe=universe))
+        new_output = Output(DataPacket(cid=self._sender_handler._CID, sourceName=self._sender_handler._source_name, universe=universe))
         self._outputs[universe] = new_output
 
     def deactivate_output(self, universe: int) -> None:
@@ -105,8 +101,8 @@ class sACNsender:
         try:  # try to send out three messages with stream_termination bit set to 1
             self._outputs[universe]._packet.option_StreamTerminated = True
             for _ in range(0, 3):
-                self._output_thread.send_out(self._outputs[universe])
-        except (KeyError, AttributeError):
+                self._sender_handler.send_out(self._outputs[universe], time.time())
+        except KeyError:
             pass
         try:
             del self._outputs[universe]
@@ -143,35 +139,18 @@ class sACNsender:
         except KeyError:
             return None
 
-    def start(self, bind_address=None, bind_port: int = None, fps: int = None) -> None:
+    def start(self) -> None:
         """
-        Starts or restarts a new Thread with the parameters given in the constructor or
-        the parameters given in this function.
-        The parameters in this function do not override the class specific values!
-        :param bind_address: the IP-Address to bind to
-        :param bind_port: the port to bind to
-        :param fps: the fps to use. Note: this is not precisely hold, use for load balance in the network
+        Starts or restarts a new Thread with the parameters given in the constructor.
         """
-        if bind_address is None:
-            bind_address = self.bindAddress
-        if fps is None:
-            fps = self._fps
-        if bind_port is None:
-            bind_port = self.bind_port
         self.stop()
-        self._output_thread = OutputThread(cid=self.__CID, source_name=self.source_name,
-                                           outputs=self._outputs, bind_address=bind_address,
-                                           bind_port=bind_port, fps=fps, universe_discovery=self._universeDiscovery)
-        self._output_thread.start()
+        self._sender_handler.start()
 
     def stop(self) -> None:
         """
         Tries to stop a current running sender. A running Thread will be stopped and should terminate.
         """
-        try:
-            self._output_thread.enabled_flag = False
-        except AttributeError:
-            pass
+        self._sender_handler.stop()
 
     def __del__(self):
         # stop a potential running thread
@@ -180,4 +159,4 @@ class sACNsender:
 
 def check_universe(universe: int):
     if universe not in range(1, 64000):
-        raise TypeError(f'Universe must be between [1-63999]! Universe was {universe}')
+        raise ValueError(f'Universe must be between [1-63999]! Universe was {universe}')

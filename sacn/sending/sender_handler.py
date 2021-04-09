@@ -24,7 +24,7 @@ class SenderHandler(SenderSocketListener):
         else:
             self.socket: SenderSocketBase = socket
 
-        self.__CID = cid
+        self._CID = cid
         self._source_name = source_name
         self.universe_discovery: bool = True
         self._last_time_universe_discover: float = 0
@@ -64,7 +64,7 @@ class SenderHandler(SenderSocketListener):
 
     def send_universe_discovery_packets(self):
         packets = UniverseDiscoveryPacket.make_multiple_uni_disc_packets(
-            cid=self.__CID, sourceName=self._source_name, universes=list(self._outputs.keys()))
+            cid=self._CID, sourceName=self._source_name, universes=list(self._outputs.keys()))
         for packet in packets:
             self.socket.send_broadcast(packet)
 
@@ -81,9 +81,15 @@ class SenderHandler(SenderSocketListener):
             self.send_out(output, current_time)
             output._packet.syncAddr = 0
 
-        sync_packet = SyncPacket(cid=self.__CID, syncAddr=sync_universe, sequence=self._sync_sequence)
+        sync_packet = SyncPacket(cid=self._CID, syncAddr=sync_universe, sequence=self._sync_sequence)
         # Increment sequence number for next time.
         self._sync_sequence += 1
         if self._sync_sequence > 255:
             self._sync_sequence = 0
         self.socket.send_multicast(sync_packet, calculate_multicast_addr(sync_universe), 255)
+
+    def start(self):
+        self.socket.start()
+
+    def stop(self):
+        self.socket.stop()

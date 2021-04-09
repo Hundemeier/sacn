@@ -5,10 +5,9 @@ import time
 import threading
 
 from sacn.messages.root_layer import RootLayer
-from sacn.sending.sender_socket_base import SenderSocketBase, SenderSocketListener
+from sacn.sending.sender_socket_base import SenderSocketBase, SenderSocketListener, DEFAULT_PORT
 
 THREAD_NAME = 'sACN sending/sender thread'
-DEFAULT_PORT = 5568
 
 
 class SenderSocketUDP(SenderSocketBase):
@@ -82,7 +81,8 @@ class SenderSocketUDP(SenderSocketBase):
         self.send_packet(data.getBytes(), destination='<broadcast>')
 
     def send_packet(self, data: bytearray, destination: str) -> None:
+        data_raw = bytearray(data)
         try:
-            self._socket.sendto(data, (destination, DEFAULT_PORT))
+            self._socket.sendto(data_raw, (destination, DEFAULT_PORT))
         except OSError as e:
             self._logger.warning('Failed to send packet', exc_info=e)

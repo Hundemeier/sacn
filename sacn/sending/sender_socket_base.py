@@ -3,6 +3,8 @@
 import logging
 from sacn.messages.root_layer import RootLayer
 
+DEFAULT_PORT = 5568
+
 
 class SenderSocketListener:
     """

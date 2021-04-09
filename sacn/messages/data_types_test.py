@@ -64,3 +64,12 @@ def test_cid_setter():
         cid.value = value
 
     cid_failing_test_cases(apply_setter)
+
+
+def test_cid_equals():
+    tuple1 = tuple(range(0, 16))
+    tuple2 = tuple(range(0, 16))
+
+    cid1 = CID(tuple1)
+    cid2 = CID(tuple2)
+    assert cid1 == cid2
