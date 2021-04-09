@@ -7,9 +7,9 @@ from sacn.receiving.receiver_socket_base import ReceiverSocketBase, ReceiverSock
 def test_abstract_receiver_socket_listener():
     listener = ReceiverSocketListener()
     with pytest.raises(NotImplementedError):
-        listener.on_data([])
+        listener.on_data([], 0)
     with pytest.raises(NotImplementedError):
-        listener.on_periodic_callback()
+        listener.on_periodic_callback(0)
 
 
 def test_abstract_receiver_socket_base():

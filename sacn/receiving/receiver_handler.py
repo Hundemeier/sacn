@@ -1,6 +1,5 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
-import time
 from typing import Dict, List
 
 from sacn.messages.data_packet import DataPacket
@@ -41,32 +40,32 @@ class ReceiverHandler(ReceiverSocketListener):
         # the value is a tuple with the last priority and the time when this priority recently was received
         self._priorities: Dict[int, tuple] = {}
         # store the last timestamp when something on an universe arrived for checking for timeouts
-        self._lastDataTimestamps: Dict[int, int] = {}
+        self._lastDataTimestamps: Dict[int, float] = {}
         # store the last sequence number of a universe here:
         self._lastSequence: Dict[int, int] = {}
 
-    def on_data(self, data: bytes) -> None:
+    def on_data(self, data: bytes, current_time: float) -> None:
         try:
             tmp_packet = DataPacket.make_data_packet(data)
         except TypeError:  # try to make a DataPacket. If it fails just ignore it
             return
 
-        self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet)
-        self.refresh_priorities(tmp_packet)
+        self.check_for_stream_terminated_and_refresh_timestamp(tmp_packet, current_time)
+        self.refresh_priorities(tmp_packet, current_time)
         if not self.is_legal_priority(tmp_packet):
             return
         if not self.is_legal_sequence(tmp_packet):  # check for bad sequence number
             return
         self.fire_callbacks_universe(tmp_packet)
 
-    def on_periodic_callback(self) -> None:
+    def on_periodic_callback(self, current_time: float) -> None:
         # check all DataTimestamps for timeouts
         for key, value in list(self._lastDataTimestamps.items()):
             #  this is converted to list, because the length of the dict changes
-            if check_timeout(value):
+            if check_timeout(current_time, value):
                 self.fire_timeout_callback_and_delete(key)
 
-    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket) -> None:
+    def check_for_stream_terminated_and_refresh_timestamp(self, packet: DataPacket, current_time: float) -> None:
         # refresh the last timestamp on a universe, but check if its the last message of a stream
         # (the stream is terminated by the Stream termination bit)
         if packet.option_StreamTerminated:
@@ -76,7 +75,7 @@ class ReceiverHandler(ReceiverSocketListener):
             if packet.universe not in self._lastDataTimestamps.keys():
                 # fire callbacks if this is the first received packet for this universe
                 self._listener.on_availability_change(universe=packet.universe, changed='available')
-            self._lastDataTimestamps[packet.universe] = current_time_millis()
+            self._lastDataTimestamps[packet.universe] = current_time
 
     def fire_timeout_callback_and_delete(self, universe: int):
         self._listener.on_availability_change(universe=universe, changed='timeout')
@@ -91,15 +90,15 @@ class ReceiverHandler(ReceiverSocketListener):
         except KeyError:
             pass  # drop exception, if there was no last sequence number
 
-    def refresh_priorities(self, packet: DataPacket) -> None:
+    def refresh_priorities(self, packet: DataPacket, current_time: float) -> None:
         # check the priority and refresh the priorities dict
         # check if the stored priority has timeouted and make the current packets priority the new one
         if packet.universe not in self._priorities.keys() or \
            self._priorities[packet.universe] is None or \
-           check_timeout(self._priorities[packet.universe][1]) or \
+           check_timeout(current_time, self._priorities[packet.universe][1]) or \
            self._priorities[packet.universe][0] <= packet.priority:  # if the send priority is higher or
             # equal than the stored one, than make the priority the new one
-            self._priorities[packet.universe] = (packet.priority, current_time_millis())
+            self._priorities[packet.universe] = (packet.priority, current_time)
 
     def is_legal_sequence(self, packet: DataPacket) -> bool:
         """
@@ -147,9 +146,9 @@ class ReceiverHandler(ReceiverSocketListener):
         return list(self._lastDataTimestamps.keys())
 
 
-def current_time_millis() -> int:
-    return int(round(time.time() * 1000))
+def time_millis(current_time: float) -> int:
+    return int(round(current_time * 1000))
 
 
-def check_timeout(time) -> bool:
-    return abs(current_time_millis() - time) > E131_NETWORK_DATA_LOSS_TIMEOUT_ms
+def check_timeout(current_time: float, time: float) -> bool:
+    return abs(time_millis(current_time) - time_millis(time)) > E131_NETWORK_DATA_LOSS_TIMEOUT_ms

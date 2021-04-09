@@ -1,6 +1,5 @@
 # This file is under MIT license. The license file can be obtained in the root directory of this module.
 
-import time
 import pytest
 from sacn.messages.data_packet import DataPacket
 from sacn.receiving.receiver_handler import ReceiverHandler, ReceiverHandlerListener, E131_NETWORK_DATA_LOSS_TIMEOUT_ms
@@ -52,7 +51,7 @@ def test_first_packet():
         universe=1,
         dmxData=tuple(range(0, 16))
     )
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert listener.on_availability_change_changed == 'available'
     assert listener.on_availability_change_universe == 1
     assert listener.on_dmx_data_change_packet.__dict__ == packet.__dict__
@@ -70,7 +69,7 @@ def test_first_packet_stream_terminated():
         dmxData=tuple(range(0, 16)),
         streamTerminated=True
     )
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert listener.on_availability_change_changed == 'timeout'
     assert listener.on_availability_change_universe == 1
     assert listener.on_dmx_data_change_packet.__dict__ == packet.__dict__
@@ -82,7 +81,7 @@ def test_invalid_packet_bytes():
     assert listener.on_availability_change_universe is None
     assert listener.on_dmx_data_change_packet is None
     # provide 'random' data that is no DataPacket
-    socket.call_on_data(bytes(x % 256 for x in range(0, 512)))
+    socket.call_on_data(bytes(x % 256 for x in range(0, 512)), 0)
     assert listener.on_availability_change_changed is None
     assert listener.on_availability_change_universe is None
     assert listener.on_dmx_data_change_packet is None
@@ -99,7 +98,7 @@ def test_invalid_priority():
         dmxData=tuple(range(0, 16)),
         priority=100
     )
-    socket.call_on_data(bytes(packet1.getBytes()))
+    socket.call_on_data(bytes(packet1.getBytes()), 0)
     assert listener.on_dmx_data_change_packet.__dict__ == packet1.__dict__
     packet2 = DataPacket(
         cid=tuple(range(0, 16)),
@@ -108,7 +107,7 @@ def test_invalid_priority():
         dmxData=tuple(range(0, 16)),
         priority=99
     )
-    socket.call_on_data(bytes(packet2.getBytes()))
+    socket.call_on_data(bytes(packet2.getBytes()), 1)
     # second packet does not override the previous one
     assert listener.on_dmx_data_change_packet.__dict__ == packet1.__dict__
 
@@ -125,7 +124,7 @@ def test_invalid_sequence():
             dmxData=tuple(range(0, 16)),
             sequence=sequence_a
         )
-        socket.call_on_data(bytes(packet1.getBytes()))
+        socket.call_on_data(bytes(packet1.getBytes()), 0)
         assert listener.on_dmx_data_change_packet.__dict__ == packet1.__dict__
         packet2 = DataPacket(
             cid=tuple(range(0, 16)),
@@ -135,7 +134,7 @@ def test_invalid_sequence():
             dmxData=tuple(range(1, 17)),
             sequence=sequence_b
         )
-        socket.call_on_data(bytes(packet2.getBytes()))
+        socket.call_on_data(bytes(packet2.getBytes()), 1)
         assert listener.on_dmx_data_change_packet.__dict__ == packet2.__dict__
 
     case_goes_through(100, 80)
@@ -161,15 +160,15 @@ def test_possible_universes():
         dmxData=tuple(range(0, 16))
     )
     # add universe 1
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert handler.get_possible_universes() == [1]
     # add universe 2
     packet.universe = 2
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert handler.get_possible_universes() == [1, 2]
     # remove universe 2
     packet.option_StreamTerminated = True
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert handler.get_possible_universes() == [1]
 
 
@@ -183,14 +182,13 @@ def test_universe_timeout():
         universe=1,
         dmxData=tuple(range(0, 16))
     )
-    socket.call_on_data(bytes(packet.getBytes()))
-    socket.call_on_periodic_callback()
+    socket.call_on_data(bytes(packet.getBytes()), 0)
+    socket.call_on_periodic_callback(0)
     assert listener.on_availability_change_changed == 'available'
     assert listener.on_availability_change_universe == 1
     # wait the specified amount of time and check, that a timeout was triggered
     # add 10ms of grace time
-    time.sleep((E131_NETWORK_DATA_LOSS_TIMEOUT_ms / 1000) + 0.01)
-    socket.call_on_periodic_callback()
+    socket.call_on_periodic_callback((E131_NETWORK_DATA_LOSS_TIMEOUT_ms / 1000) + 0.01)
     assert listener.on_availability_change_changed == 'timeout'
     assert listener.on_availability_change_universe == 1
 
@@ -205,12 +203,12 @@ def test_universe_stream_terminated():
         universe=1,
         dmxData=tuple(range(0, 16))
     )
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert listener.on_availability_change_changed == 'available'
     assert listener.on_availability_change_universe == 1
     packet.sequence_increase()
     packet.option_StreamTerminated = True
-    socket.call_on_data(bytes(packet.getBytes()))
+    socket.call_on_data(bytes(packet.getBytes()), 0)
     assert listener.on_availability_change_changed == 'timeout'
     assert listener.on_availability_change_universe == 1
 
