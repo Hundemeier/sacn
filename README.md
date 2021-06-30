@@ -183,6 +183,7 @@ Functions:
    The callback should have one argument: `callback(packet)`
      * `packet: DataPacket`: the received DataPacket with all information
  * `remove_listener(<callback>)`: removes a previously registered listener regardless of the trigger.
+ This means a listener can only be removed completely, even if it was listening to multiple universes.
  If the function never was registered, nothing happens. Note: if a function was registered multiple times, this remove function needs to be called only once.
 
 ### DataPacket
