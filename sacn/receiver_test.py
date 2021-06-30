@@ -64,6 +64,40 @@ def test_listen_on_dmx_data_change():
     assert called
 
 
+def test_remove_listener():
+    receiver, socket = get_receiver()
+
+    packetSend = DataPacket(
+        cid=tuple(range(0, 16)),
+        sourceName='Test',
+        universe=1,
+        dmxData=tuple(range(0, 16))
+    )
+
+    called = 0
+
+    def callback_packet(packet):
+        assert packetSend.__dict__ == packet.__dict__
+        nonlocal called
+        called += 1
+
+    # register listener multiple times
+    receiver.register_listener('universe', callback_packet, universe=packetSend.universe)
+    receiver.register_listener('universe', callback_packet, universe=packetSend.universe)
+
+    socket.call_on_data(bytes(packetSend.getBytes()), 0)
+    assert called == 2
+
+    # change DMX data to trigger a change
+    packetSend.dmxData = tuple(range(16, 32))
+    packetSend.sequence_increase()
+
+    receiver.remove_listener(callback_packet)
+
+    socket.call_on_data(bytes(packetSend.getBytes()), 0)
+    assert called == 2
+
+
 def test_invalid_listener():
     receiver, socket = get_receiver()
 

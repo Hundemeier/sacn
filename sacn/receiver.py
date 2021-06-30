@@ -77,6 +77,20 @@ class sACNreceiver(ReceiverHandlerListener):
         else:
             raise TypeError(f'The given trigger "{trigger}" is not a valid one!')
 
+    def remove_listener(self, func: callable) -> None:
+        """
+        Removes the given function from all listening options (see LISTEN_ON_OPTIONS).
+        If the function never was registered, nothing happens. Note: if a function was registered multiple times,
+        this remove function needs to be called only once.
+        :param func: the callback
+        """
+        for _trigger, listeners in self._callbacks.items():
+            while True:
+                try:
+                    listeners.remove(func)
+                except ValueError:
+                    break
+
     def join_multicast(self, universe: int) -> None:
         """
         Joins the multicast address that is used for the given universe. Note: If you are on Windows you must have given
