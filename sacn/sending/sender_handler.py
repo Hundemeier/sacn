@@ -35,7 +35,7 @@ class SenderHandler(SenderSocketListener):
     def on_periodic_callback(self, current_time: float) -> None:
         # send out universe discovery packets if necessary
         if self.universe_discovery and \
-              abs(current_time - self._last_time_universe_discover) > E131_E131_UNIVERSE_DISCOVERY_INTERVAL:
+              abs(current_time - self._last_time_universe_discover) >= E131_E131_UNIVERSE_DISCOVERY_INTERVAL:
             self.send_universe_discovery_packets()
             self._last_time_universe_discover = current_time
 
@@ -45,7 +45,7 @@ class SenderHandler(SenderSocketListener):
             # only send if the manual flush feature is disabled
             # send out when the 1 second interval is over
             if not self.manual_flush and \
-              (output._changed or abs(current_time - output._last_time_send) > SEND_OUT_INTERVAL)]
+            (output._changed or abs(current_time - output._last_time_send) >= SEND_OUT_INTERVAL)]
 
     def send_out(self, output: Output, current_time: float):
         # 1st: Destination (check if multicast)
