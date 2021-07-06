@@ -220,6 +220,7 @@ pip install flake8 pytest coverage
 It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
 ### Changelog
+ * 1.7.1: Small changes that might improve timing on the sender. (Thanks to mthespian! See #36 for more information)
  * 1.7.0: Added function for removing a listener on a receiver. See `sACNreceiver.remove_listener(<callback>)` for more information.
  * 1.6.4: Functionality related to sending of sACN data is now mostly covered by tests. Removed undocumented parameters for `sACNsender.start()`.
  * 1.6.3: Functionality related to receiving sACN data is now mostly covered by tests. Fixed a bug, where an exception was thrown on the first `DataPacket` when the stream-termination option was set. (Additional thanks to mthespian! See #31 for more information)
