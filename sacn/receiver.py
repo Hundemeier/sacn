@@ -91,6 +91,14 @@ class sACNreceiver(ReceiverHandlerListener):
                 except ValueError:
                     break
 
+    def remove_listener_from_universe(self, universe: int) -> None:
+        """
+        Removes all listeners from the given universe. This does only have effect on the 'universe' listening trigger.
+        If no function was registered for this universe, nothing happens.
+        :param universe: the universe to clear
+        """
+        self._callbacks.pop(universe, None)
+
     def join_multicast(self, universe: int) -> None:
         """
         Joins the multicast address that is used for the given universe. Note: If you are on Windows you must have given

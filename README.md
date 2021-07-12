@@ -184,7 +184,11 @@ Functions:
      * `packet: DataPacket`: the received DataPacket with all information
  * `remove_listener(<callback>)`: removes a previously registered listener regardless of the trigger.
  This means a listener can only be removed completely, even if it was listening to multiple universes.
- If the function never was registered, nothing happens. Note: if a function was registered multiple times, this remove function needs to be called only once.
+ If the function never was registered, nothing happens.
+ Note: if a function was registered multiple times, this remove function needs to be called only once.
+ * `remove_listener_from_universe(<universe>)`: removes all listeners from the given universe.
+ This does only have effect on the 'universe' listening trigger.
+ If no function was registered for this universe, nothing happens.
 
 ### DataPacket
 This is an abstract representation of an sACN Data packet that carries the DMX data. This class is used internally by
