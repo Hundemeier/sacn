@@ -94,7 +94,7 @@ class sACNreceiver(ReceiverHandlerListener):
     def remove_listener_from_universe(self, universe: int) -> None:
         """
         Removes all listeners from the given universe. This does only have effect on the 'universe' listening trigger.
-        If no function was registered, nothing happens.
+        If no function was registered for this universe, nothing happens.
         :param universe: the universe to clear
         """
         self._callbacks.pop(universe, None)
