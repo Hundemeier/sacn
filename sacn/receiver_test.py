@@ -94,8 +94,62 @@ def test_remove_listener():
 
     receiver.remove_listener(callback_packet)
 
+    # removing a listener does not exist, should do nothing
+    receiver.remove_listener(None)
+
     socket.call_on_data(bytes(packetSend.getBytes()), 0)
     assert called == 2
+
+
+def test_remove_listener_from_universe():
+    receiver, socket = get_receiver()
+
+    test_universe_one = 1
+    test_universe_two = 2
+
+    packet_send = DataPacket(
+        cid=tuple(range(0, 16)),
+        sourceName='Test',
+        universe=test_universe_one,
+        dmxData=tuple(range(0, 16))
+    )
+
+    called = 0
+
+    def callback_packet(packet):
+        assert packet_send.__dict__ == packet.__dict__
+        nonlocal called
+        called += 1
+
+    # register listener multiple times
+    receiver.register_listener('universe', callback_packet, universe=test_universe_one)
+    receiver.register_listener('universe', callback_packet, universe=test_universe_two)
+
+    packet_send.universe = test_universe_one
+    socket.call_on_data(bytes(packet_send.getBytes()), 0)
+    assert called == 1
+    packet_send.universe = test_universe_two
+    socket.call_on_data(bytes(packet_send.getBytes()), 0)
+    assert called == 2
+
+    # change DMX data to trigger a change
+    packet_send.dmxData = tuple(range(16, 32))
+    packet_send.sequence_increase()
+
+    test_universe_removed = test_universe_one
+    receiver.remove_listener_from_universe(test_universe_removed)
+
+    # removing from a universe that does not exist, should do nothing
+    receiver.remove_listener_from_universe(12345)
+
+    # call to the removed universe should not happen
+    packet_send.universe = test_universe_removed
+    socket.call_on_data(bytes(packet_send.getBytes()), 0)
+    assert called == 2
+    # other universes should not be affected
+    packet_send.universe = test_universe_two
+    socket.call_on_data(bytes(packet_send.getBytes()), 0)
+    assert called == 3
 
 
 def test_invalid_listener():
