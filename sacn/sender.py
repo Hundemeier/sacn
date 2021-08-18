@@ -148,7 +148,8 @@ class sACNsender:
 
     def stop(self) -> None:
         """
-        Tries to stop a current running sender. A running Thread will be stopped and should terminate.
+        Stops a running thread and closes the underlying socket. If no thread was started, nothing happens.
+        Do not reuse the socket after calling stop once.
         """
         self._sender_handler.stop()
 
