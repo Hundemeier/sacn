@@ -224,6 +224,7 @@ pip install flake8 pytest coverage
 It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
 ### Changelog
+ * 1.8.1: Calling `stop` on a sender or receiver now closes the underlying socket too. Note: after stopping a sender or receiver, it can not be started again with `start`. (See #39 for more information)
  * 1.8.0: Added function for removing a listener on a receiver by universe. See `sACNreceiver.remove_listener_from_universe(<universe>)` for more information.
  * 1.7.1: Small changes that might improve timing on the sender. (Thanks to mthespian! See #36 for more information)
  * 1.7.0: Added function for removing a listener on a receiver. See `sACNreceiver.remove_listener(<callback>)` for more information.
