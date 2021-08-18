@@ -31,12 +31,12 @@ class ReceiverSocketUDP(ReceiverSocketBase):
 
     def start(self):
         # initialize thread infos
-        thread = threading.Thread(
+        self._thread = threading.Thread(
             target=self.receive_loop,
             name=THREAD_NAME
         )
-        # thread.setDaemon(True)  # TODO: might be beneficial to use a daemon thread
-        thread.start()
+        # self._thread.setDaemon(True)  # TODO: might be beneficial to use a daemon thread
+        self._thread.start()
 
     def receive_loop(self) -> None:
         """
@@ -63,6 +63,12 @@ class ReceiverSocketUDP(ReceiverSocketBase):
         Stop a potentially running thread by gracefull shutdown. Does not stop the thread immediately.
         """
         self._enabled_flag = False
+        try:
+            self._thread.join()
+            # stop the socket, after the loop terminated
+            self._socket.close()
+        except AttributeError:
+            pass
 
     def join_multicast(self, multicast_addr: str) -> None:
         """
