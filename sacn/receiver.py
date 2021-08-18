@@ -127,7 +127,8 @@ class sACNreceiver(ReceiverHandlerListener):
 
     def stop(self) -> None:
         """
-        Stops a running thread. If no thread was started nothing happens.
+        Stops a running thread and closes the underlying socket. If no thread was started, nothing happens.
+        Do not reuse the socket after calling stop once.
         """
         self._handler.socket.stop()
 

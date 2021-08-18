@@ -60,7 +60,8 @@ class ReceiverSocketUDP(ReceiverSocketBase):
 
     def stop(self) -> None:
         """
-        Stop a potentially running thread by gracefull shutdown. Does not stop the thread immediately.
+        Stops a running thread and closes the underlying socket. If no thread was started, nothing happens.
+        Do not reuse the socket after calling stop once.
         """
         self._enabled_flag = False
         try:
