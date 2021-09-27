@@ -3,7 +3,7 @@
 This module is a simple sACN library that support the standard DMX message of the protocol.
 It is based on the [2016][e1.31] version of the official ANSI E1.31 standard.
 It has support for sending out DMX data and receiving it. Multiple and multicast universes are supported.
-For full blown DMX support use [OLA](http://opendmx.net/index.php/Open_Lighting_Architecture).
+For full blown DMX support use [OLA](https://www.openlighting.org/ola/).
 
 Currently missing features:
  * discovery messages (receiving)
