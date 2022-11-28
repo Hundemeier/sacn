@@ -148,10 +148,14 @@ receiver.start()  # start the receiving thread
 def callback(packet):  # packet type: sacn.DataPacket
     print(packet.dmxData)  # print the received DMX data
 
-# optional: if you want to use multicast use this function with the universe as parameter
+# optional: if multicast is desired, join with the universe number as parameter
 receiver.join_multicast(1)
 
 time.sleep(10)  # receive for 10 seconds
+
+# optional: if multicast was previously joined
+receiver.leave_multicast(1)
+
 receiver.stop()
 ```
 
