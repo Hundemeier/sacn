@@ -224,6 +224,8 @@ pip install flake8 pytest coverage
 `flake8` checks for formatting issues and can be run with `flake8` or `python -m flake8` in the root directory of this repository.
 
 `pytest` is used for unit testing and can be executed with `pytest` or `python -m pytest` in the root directory of this repository.
+By default, this skips the integration test, which uses real hardware I/O and might not run in every configuration.
+Use the flag `--run-integration-tests` to run the additional tests (e.g. `python -m pytest --run-integration-tests`)
 
 It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
