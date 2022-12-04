@@ -24,7 +24,7 @@ VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST = (0, 0, 0, 0x1)
 class RootLayer:
     def __init__(self, length: int, cid: tuple, vector: tuple):
         self.length = length
-        if(len(vector) != 4):
+        if (len(vector) != 4):
             raise ValueError('the length of the vector is not 4!')
         self._vector = vector
         self.cid = cid
