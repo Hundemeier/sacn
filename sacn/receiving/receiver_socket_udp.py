@@ -75,7 +75,7 @@ class ReceiverSocketUDP(ReceiverSocketBase):
         """
         Join a specific multicast address by string. Only IPv4.
         """
-        self._socket.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP,
+        self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
                                 socket.inet_aton(multicast_addr) +
                                 socket.inet_aton(self._bind_address))
 
@@ -84,7 +84,7 @@ class ReceiverSocketUDP(ReceiverSocketBase):
         Leave a specific multicast address by string. Only IPv4.
         """
         try:
-            self._socket.setsockopt(socket.SOL_IP, socket.IP_DROP_MEMBERSHIP,
+            self._socket.setsockopt(socket.IPPROTO_IP, socket.IP_DROP_MEMBERSHIP,
                                     socket.inet_aton(multicast_addr) +
                                     socket.inet_aton(self._bind_address))
         except socket.error:  # try to leave the multicast group for the universe

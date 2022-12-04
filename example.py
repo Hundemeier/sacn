@@ -55,6 +55,9 @@ send_out_for_2s(2)
 
 sender.deactivate_output(2)
 
+receiver.leave_multicast(1)
+receiver.leave_multicast(2)
+
 # stop both threads
 receiver.stop()
 sender.stop()
