@@ -218,7 +218,7 @@ Some tools are used to help with development of this library. These are [flake8]
 Install those tools with pip:
 
 ```
-pip install flake8 pytest coverage
+pip install flake8 pytest pytest-timeout coverage
 ```
 
 `flake8` checks for formatting issues and can be run with `flake8` or `python -m flake8` in the root directory of this repository.

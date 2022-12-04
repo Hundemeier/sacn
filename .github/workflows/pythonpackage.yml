@@ -7,7 +7,7 @@ jobs:
 
     strategy:
       matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        os: ["ubuntu-latest", "windows-latest"]
         python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
         # use Ubuntu 20.04 for Python 3.6
         exclude:
@@ -31,12 +31,13 @@ jobs:
         python -m pip install --upgrade pip
       # there are currently no dependencies
         #  pip install -r requirements.txt
+    - name: Install flake8
+      run: pip install flake8
     - name: Lint with flake8
       run: |
-        pip install flake8
         # stop the build if flake reports any issues
         flake8 . --statistics --show-source
+    - name: Install pytest
+      run: pip install pytest pytest-timeout
     - name: Test with pytest
-      run: |
-        pip install pytest
-        pytest --run-integration-tests
+      run: pytest --run-integration-tests

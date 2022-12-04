@@ -15,6 +15,7 @@ import pytest
 from collections import OrderedDict
 
 
+@pytest.mark.timeout(5)
 @pytest.mark.integration_test
 def test_integration():
     logging.basicConfig(level=logging.DEBUG)  # enable logging of sacn module
