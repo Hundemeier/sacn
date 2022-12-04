@@ -12,7 +12,7 @@ Currently missing features:
 
 Features:
  * out-of-order packet detection like the [E1.31][e1.31] 6.7.2
- * multicast (on Windows this is a bit tricky though)
+ * multicast
  * auto flow control (see [The Internals/Sending](#sending))
  * E1.31 sync feature (see manual_flush)
 
@@ -54,7 +54,7 @@ To use the sending functionality you have to use the `sACNsender`.
 import sacn
 import time
 
-sender = sacn.sACNsender()  # provide an IP-Address to bind to if you are using Windows and want to use multicast
+sender = sacn.sACNsender()  # provide an IP-Address to bind to if you want to send multicast packets from a specific interface
 sender.start()  # start the sending thread
 sender.activate_output(1)  # start sending out data in the 1st universe
 sender[1].multicast = True  # set multicast to True
@@ -92,16 +92,14 @@ Available Attributes for `sender[<universe>].<attribute>` are:
 DMX data is send out every second, when no data changes. Some changes may be not send out, because the fps
 setting defines how often packets are send out to prevent network overuse. So if you change the DMX values too
 often in a second they may not all been send. Vary the fps parameter to your needs (Default=30).
-Note that a bind address is needed on Windows for sending out multicast packets.
  * `bind_address: str`: the IP-Address to bind to.
- For multicast and universe discovery on a Windows machine this must be set to a proper value otherwise omit.
+ Provide an IP-Address to bind to if you want to send multicast packets from a specific interface.
  * `bind_port: int`: optionally bind to a specific port. Default=5568. It is not recommended to change the port.
  Change the port number if you have trouble with another program or the sACNreceiver blocking the port
  * `source_name: str`: the source name used in the sACN packets. See the [standard][e1.31] for more information.
  * `cid: tuple`: the cid. If not given, a random CID will be generated. See the [standard][e1.31] for more information.
  * `fps: int` the frames per second. See explanation above. Has to be >0. Default: 30
- * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. For this
- feature to function properly on Windows, you have to provide a bind address. Default: True
+ * `universeDiscovery: bool` if true, universe discovery messages are send out via broadcast every 10s. Default: True
  * `sync_universe: int` set a specific universe used in the sync-packets. Default: 63999
 
 When manually flushed, the E1.31 sync feature is used. So all universe data is send out, and after all data was send out
@@ -117,7 +115,7 @@ sender = sacn.sACNsender()
 sender.start()
 sender.activate_output(1)
 sender.activate_output(2)
-sender[1].multicast = True # keep in mind that multicast on windows is a bit different
+sender[1].multicast = True
 sender[2].multicast = True
 
 sender.manual_flush = True # turning off the automatic sending of packets
@@ -139,7 +137,7 @@ To use the receiving functionality you have to use the `sACNreceiver`.
 import sacn
 import time
 
-# provide an IP-Address to bind to if you are using Windows and want to use multicast
+# provide an IP-Address to bind to if you want to send multicast packets from a specific interface
 receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
 
@@ -161,8 +159,7 @@ receiver.stop()
 
 The usage of the receiver is way more simple than the sender.
 The `sACNreceiver` can be initialized with the following parameters:
- * `bind_address: str`: if you are on a Windows system and want to use multicast provide a valid interfaceIP-Address!
- Otherwise omit.
+ * `bind_address: str`: Provide an IP-Address to bind to if you want to receive multicast packets from a specific interface.
  * `bind_port: int`: Default: 5568. It is not recommended to change this value!
  Only use when you are know what you are doing!
 
@@ -170,8 +167,7 @@ Please keep in mind to not use the callbacks for time consuming tasks!
 If you do this, then the receiver can not react fast enough on incoming messages!
 
 Functions:
- * `join_multicast(<universe>)`: joins the multicast group for the specific universe. If you are on Windows you have to
- bind the receiver to a valid IP-Address. That is done in the constructor of a sACNreceiver.
+ * `join_multicast(<universe>)`: joins the multicast group for the specific universe.
  * `leave_multicast(<universe>)`: leave the multicast group specified by the universe.
  * `get_possible_universes()`: Returns a tuple with all universes that have sources that are sending out data and this
  data is received by this machine
@@ -230,6 +226,7 @@ Use the flag `--run-integration-tests` to run the additional tests (e.g. `python
 It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
 ### Changelog
+ * 1.9.0: The behavior of multicast sending and receiving is now unified across most operating systems. This means Windows no longer requires to set a `bind_address` to be able to use multicast or universe discovery. (Thanks to mthespian! See #42 for more information)
  * 1.8.1: Calling `stop` on a sender or receiver now closes the underlying socket too. Note: after stopping a sender or receiver, it can not be started again with `start`. (See #39 for more information)
  * 1.8.0: Added function for removing a listener on a receiver by universe. See `sACNreceiver.remove_listener_from_universe(<universe>)` for more information.
  * 1.7.1: Small changes that might improve timing on the sender. (Thanks to mthespian! See #36 for more information)
