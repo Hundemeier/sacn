@@ -73,9 +73,10 @@ def test_integration():
     # but not the amount of events (e.g. the timeout event can be called multiple times, depending on thread timings)
     assert OrderedDict(universes_changes) == OrderedDict([(1, "available"), (1, "timeout"), (2, "available"), (2, "timeout")])
     # depending on the thread timing, the amount of packets received might be higher than 60 packets
+    # depending on the os and network, the UDP packets might be dropped, so the amount of packets might be lower than 60
     # there are 30 packets per second and the test runs for at least two seconds
-    assert universe_packet_counter[1] in range(60, 80)
-    assert universe_packet_counter[2] in range(60, 80)
+    assert universe_packet_counter[1] in range(55, 80)
+    assert universe_packet_counter[2] in range(55, 80)
 
 
 if __name__ == '__main__':
