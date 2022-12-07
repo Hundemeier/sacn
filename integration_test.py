@@ -25,7 +25,10 @@ def test_integration():
     receiver = sacn.sACNreceiver()
     receiver.start()  # start the receiving thread
 
-    sender = sacn.sACNsender()
+    # Note that MacOS can not bind two sockets to the same port,
+    # but sender and receiver both use one socket on the same port by default.
+    # The workaround is to use a different port on the sender on MacOS.
+    sender = sacn.sACNsender(bind_port=5569)
     sender.start()  # start the sending thread
 
     @receiver.listen_on('availability')  # check for availability of universes
