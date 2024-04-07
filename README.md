@@ -144,7 +144,8 @@ receiver.start()  # start the receiving thread
 # define a callback function
 @receiver.listen_on('universe', universe=1)  # listens on universe 1
 def callback(packet):  # packet type: sacn.DataPacket
-    print(packet.dmxData)  # print the received DMX data
+    if packet.dmxStartCode == 0x00:  # ignore non-DMX-data packets
+        print(packet.dmxData)  # print the received DMX data
 
 # optional: if multicast is desired, join with the universe number as parameter
 receiver.join_multicast(1)
