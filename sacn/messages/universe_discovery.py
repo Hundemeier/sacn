@@ -6,7 +6,7 @@ from typing import List
 from sacn.messages.root_layer import \
     VECTOR_ROOT_E131_EXTENDED, \
     VECTOR_E131_EXTENDED_DISCOVERY, \
-    VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST,\
+    VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST, \
     RootLayer, \
     int_to_bytes, \
     byte_tuple_to_int, \
