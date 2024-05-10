@@ -93,4 +93,5 @@ class SenderSocketUDP(SenderSocketBase):
         try:
             self._socket.sendto(data_raw, (destination, DEFAULT_PORT))
         except OSError as e:
-            self._logger.warning('Failed to send packet', exc_info=e)
+            self._logger.exception('Failed to send packet', exc_info=e)
+            raise
