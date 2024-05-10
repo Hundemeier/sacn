@@ -227,6 +227,7 @@ Use the flag `--run-integration-tests` to run the additional tests (e.g. `python
 It is useful to check if the test coverage changed with `coverage run -m pytest` and then `coverage html`, which generates a `htmlcov/index.html` file with all the information.
 
 ### Changelog
+ * 1.9.1: When a sACN packet could not be send out, the exception is raised instead of silently dropped. (Thanks to andrewyager! See #48 for more information)
  * 1.9.0: The behavior of multicast sending and receiving is now unified across most operating systems. This means Windows no longer requires to set a `bind_address` to be able to use multicast or universe discovery. (Thanks to mthespian! See #42 for more information)
  * 1.8.1: Calling `stop` on a sender or receiver now closes the underlying socket too. Note: after stopping a sender or receiver, it can not be started again with `start`. (See #39 for more information)
  * 1.8.0: Added function for removing a listener on a receiver by universe. See `sACNreceiver.remove_listener_from_universe(<universe>)` for more information.
