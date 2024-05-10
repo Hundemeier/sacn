@@ -137,7 +137,7 @@ To use the receiving functionality you have to use the `sACNreceiver`.
 import sacn
 import time
 
-# provide an IP-Address to bind to if you want to send multicast packets from a specific interface
+# provide an IP-Address to bind to if you want to receive multicast packets from a specific interface
 receiver = sacn.sACNreceiver()
 receiver.start()  # start the receiving thread
 
@@ -158,7 +158,7 @@ receiver.leave_multicast(1)
 receiver.stop()
 ```
 
-The usage of the receiver is way more simple than the sender.
+The usage of the receiver is simpler than the sender.
 The `sACNreceiver` can be initialized with the following parameters:
  * `bind_address: str`: Provide an IP-Address to bind to if you want to receive multicast packets from a specific interface.
  * `bind_port: int`: Default: 5568. It is not recommended to change this value!
