@@ -161,6 +161,10 @@ receiver.stop()
 The usage of the receiver is simpler than the sender.
 The `sACNreceiver` can be initialized with the following parameters:
  * `bind_address: str`: Provide an IP-Address to bind to if you want to receive multicast packets from a specific interface.
+ _Note:_ This parameter is ignored on Linux when binding the socket to an address, but is used in subscribing the
+ multicast group to a correct interface. If you have multiple interfaces within your system you will need to
+ specify this parameter to ensure the multicast group join is completed on the correct interface and you receive
+ sACN traffic.
  * `bind_port: int`: Default: 5568. It is not recommended to change this value!
  Only use when you are know what you are doing!
 

@@ -3,6 +3,7 @@
 import socket
 import threading
 import time
+import platform
 from sacn.receiving.receiver_socket_base import ReceiverSocketBase, ReceiverSocketListener
 
 THREAD_NAME = 'sACN input/receiver thread'
@@ -26,7 +27,11 @@ class ReceiverSocketUDP(ReceiverSocketBase):
             self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         except socket.error:  # Not all systems support multiple sockets on the same port and interface
             pass
-        self._socket.bind((self._bind_address, self._bind_port))
+        os_name = platform.system()
+        if os_name == "Linux":
+            self._socket.bind(("", self._bind_port))
+        else:
+            self._socket.bind((self._bind_address, self._bind_port))
         self._logger.info(f'Bind receiver socket to IP: {self._bind_address} port: {self._bind_port}')
 
     def start(self):
