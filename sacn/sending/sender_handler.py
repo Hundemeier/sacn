@@ -51,9 +51,19 @@ class SenderHandler(SenderSocketListener):
         # 1st: Destination (check if multicast)
         if output.multicast:
             udp_ip = output._packet.calculate_multicast_addr()
+            # 2nd: check if a per-address-priority packet needs to be send first
+            if len(output.per_address_priority) == 512:
+                self.socket.send_multicast(output._per_address_priority_packet, udp_ip, output.ttl)
+                # note: the following data packet should have an increased sequence number
+                output._packet.sequence_increase()
             self.socket.send_multicast(output._packet, udp_ip, output.ttl)
         else:
             udp_ip = output.destination
+            # 2nd: check if a per-address-priority packet needs to be send first
+            if len(output.per_address_priority) == 512:
+                self.socket.send_unicast(output._per_address_priority_packet, udp_ip)
+                # note: the following data packet should have an increased sequence number
+                output._packet.sequence_increase()
             self.socket.send_unicast(output._packet, udp_ip)
 
         output._last_time_send = current_time

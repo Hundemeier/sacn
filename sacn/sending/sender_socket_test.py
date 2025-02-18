@@ -10,8 +10,8 @@ class SenderSocketTest(SenderSocketBase):
         super().__init__(listener)
         self.start_called: bool = False
         self.stop_called: bool = False
-        self.send_unicast_called: (RootLayer, str) = None
-        self.send_multicast_called: (RootLayer, str, int) = None
+        self.send_unicast_called: list[tuple[RootLayer, str]] = []
+        self.send_multicast_called: tuple[RootLayer, str, int] = None
         self.send_broadcast_called: RootLayer = None
 
     def start(self) -> None:
@@ -21,7 +21,7 @@ class SenderSocketTest(SenderSocketBase):
         self.stop_called = True
 
     def send_unicast(self, data: RootLayer, destination: str) -> None:
-        self.send_unicast_called = (copy.deepcopy(data), copy.deepcopy(destination))
+        self.send_unicast_called.append((copy.deepcopy(data), copy.deepcopy(destination)))
 
     def send_multicast(self, data: RootLayer, destination: str, ttl: int) -> None:
         self.send_multicast_called = (copy.deepcopy(data), copy.deepcopy(destination), ttl)

@@ -63,6 +63,7 @@ sender[1].multicast = True  # set multicast to True
 # sender[1].destination = "192.168.1.20"  # or provide unicast information.
 # Keep in mind that if multicast is on, unicast is not used
 sender[1].dmx_data = (1, 2, 3, 4)  # some test DMX data
+# sender[1].per_address_priority = tuple([123]*512)  # sets the priority per address to 123 but you could set it different for each channel
 
 time.sleep(10)  # send the data for 10 seconds
 sender.stop()  # do not forget to stop the sender
@@ -86,6 +87,7 @@ Available Attributes for `sender[<universe>].<attribute>` are:
  * `ttl: int`: the time-to-live for the packets that are send out via multicast on this universe. Default: 8
  * `priority: int`: (must be between 0-200) the priority for this universe that is send out. If multiple sources in a
  network are sending to the same receiver the data with the highest priority wins. Default: 100
+ * `per_address_priority: tuple`: ([proprietary extension of sACN by ETC](https://support.etcconnect.com/ETC/Networking/General/Difference_between_sACN_per-address_and_per-port_priority#Per-Address_Priority)) optional; set a tuple with a length of 0 or 512 that contains values between 0 and 255 but that are interpreted as priority values by some sACN implementations/devices. If not set, no per-address-priority is send out. Default: empty tuple with length 0
  * `preview_data: bool`: Flag to mark the data as preview data for visualization purposes. Default: False
  * `dmx_data: tuple`: the DMX data as a tuple. Max length is 512 and for legacy devices all data that is smaller than
  512 is merged to a 512 length tuple with 0 as filler value. The values in the tuple have to be [0-255]!

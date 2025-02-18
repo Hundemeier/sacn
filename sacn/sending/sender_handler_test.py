@@ -62,18 +62,18 @@ def test_send_out_interval():
     current_time = 100.0
 
     assert handler.manual_flush is False
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
 
     # first send packet due to interval
     socket.call_on_periodic_callback(current_time)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
-    assert socket.send_unicast_called[1] == '127.0.0.1'
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
+    assert socket.send_unicast_called[0][1] == '127.0.0.1'
 
     # interval must be 1 seconds
     socket.call_on_periodic_callback(current_time+0.99)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
+    assert len(socket.send_unicast_called) == 1
     socket.call_on_periodic_callback(current_time+1.01)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=1).__dict__
+    assert socket.send_unicast_called[1][0].__dict__ == DataPacket(cid, source_name, 1, sequence=1).__dict__
 
 
 def test_multicast():
@@ -109,7 +109,7 @@ def test_multicast():
     assert socket.send_multicast_called[1] == calculate_multicast_addr(1)
 
     # assert that no unicast was send
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
 
 
 def test_unicast():
@@ -121,13 +121,13 @@ def test_unicast():
     outputs[1].destination = destination
 
     assert handler.manual_flush is False
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     assert outputs[1].multicast is False
 
     # first send packet due to interval
     socket.call_on_periodic_callback(current_time)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
-    assert socket.send_unicast_called[1] == destination
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
+    assert socket.send_unicast_called[0][1] == destination
 
     # only send out on dmx change
     # test same data as before
@@ -135,14 +135,15 @@ def test_unicast():
     # If it is implemented, enable the following line:
     # outputs[1].dmx_data = (0, 0)
     socket.call_on_periodic_callback(current_time)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
-    assert socket.send_unicast_called[1] == destination
+    print(socket.send_unicast_called)
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(cid, source_name, 1, sequence=0).__dict__
+    assert socket.send_unicast_called[0][1] == destination
 
     # test change in data as before
     outputs[1].dmx_data = (1, 2)
     socket.call_on_periodic_callback(current_time)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=1, dmxData=(1, 2)).__dict__
-    assert socket.send_unicast_called[1] == destination
+    assert socket.send_unicast_called[1][0].__dict__ == DataPacket(cid, source_name, 1, sequence=1, dmxData=(1, 2)).__dict__
+    assert socket.send_unicast_called[1][1] == destination
 
     # assert that no multicast was send
     assert socket.send_multicast_called is None
@@ -157,20 +158,20 @@ def test_send_out_all_universes():
     outputs[1].destination = destination
 
     assert handler.manual_flush is True
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     assert socket.send_multicast_called is None
     assert outputs[1].multicast is False
 
     # check that send packets due to interval are suppressed
     socket.call_on_periodic_callback(current_time)
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     assert socket.send_multicast_called is None
 
     # after calling send_out_all_universes, the DataPackets need to send, as well as one SyncPacket
     sync_universe = 63999
     handler.send_out_all_universes(sync_universe, outputs, current_time)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(cid, source_name, 1, sequence=0, sync_universe=sync_universe).__dict__
-    assert socket.send_unicast_called[1] == destination
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(cid, source_name, 1, sequence=0, sync_universe=sync_universe).__dict__
+    assert socket.send_unicast_called[0][1] == destination
     assert socket.send_multicast_called[0].__dict__ == SyncPacket(cid, sync_universe, 0).__dict__
     assert socket.send_multicast_called[1] == calculate_multicast_addr(sync_universe)
 
@@ -185,3 +186,24 @@ def test_send_out_all_universes_sequence_increment():
     for i in range(0, 300):
         handler.send_out_all_universes(sync_universe, outputs, current_time)
         assert socket.send_multicast_called[0].__dict__ == SyncPacket(cid, sync_universe, (i % 256)).__dict__
+
+
+def test_per_address_priority():
+    handler, socket, cid, source_name, outputs = get_handler()
+    handler.manual_flush = False
+    current_time = 100.0
+    outputs[1].multicast = False
+    destination = "1.2.3.4"
+    tuple_per_address_priority = tuple([123]*512)
+    outputs[1].destination = destination
+    outputs[1].per_address_priority = tuple_per_address_priority
+
+    # send packet due to interval
+    # note: special case with per-address-priority: the sequence of the second data packet (with line values)
+    # is one higher than the priority data
+    socket.call_on_periodic_callback(current_time)
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(cid, source_name, 1, sequence=0, dmxStartCode=0xdd,
+                                                                   dmxData=tuple_per_address_priority).__dict__
+    assert socket.send_unicast_called[0][1] == destination
+    assert socket.send_unicast_called[1][0].__dict__ == DataPacket(cid, source_name, 1, sequence=1, dmxStartCode=0x00).__dict__
+    assert socket.send_unicast_called[1][1] == destination

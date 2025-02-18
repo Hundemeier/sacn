@@ -59,29 +59,29 @@ def test_flush():
     sync_universe = 1234
     sender = sacn.sACNsender(sync_universe=sync_universe, socket=socket)
 
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     # test that non-active universes throw exception
     with pytest.raises(ValueError):
         sender.flush([1, 2])
 
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     # test that no active universes triggers nothing
     sender.flush()
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
 
     # activate universe 1
     sender.activate_output(1)
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     # test that no parameters triggers flushing of all universes
     sender.flush()
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(
         sender._sender_handler._CID, sender._sender_handler._source_name, 1, sync_universe=sync_universe).__dict__
 
     # activate universe 2
     sender.activate_output(2)
     # test that a list with only universe 1 triggers flushing of only this universe
     sender.flush([1])
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(
+    assert socket.send_unicast_called[1][0].__dict__ == DataPacket(
         sender._sender_handler._CID, sender._sender_handler._source_name, 1, sequence=1, sync_universe=sync_universe).__dict__
 
 
@@ -111,9 +111,13 @@ def test_deactivate_output():
 
     # check that three packets with stream-termination bit set are send out on deactivation
     sender.activate_output(100)
-    assert socket.send_unicast_called is None
+    assert socket.send_unicast_called == []
     sender.deactivate_output(100)
-    assert socket.send_unicast_called[0].__dict__ == DataPacket(
+    assert socket.send_unicast_called[0][0].__dict__ == DataPacket(
+        sender._sender_handler._CID, sender._sender_handler._source_name, 100, sequence=0, streamTerminated=True).__dict__
+    assert socket.send_unicast_called[1][0].__dict__ == DataPacket(
+        sender._sender_handler._CID, sender._sender_handler._source_name, 100, sequence=1, streamTerminated=True).__dict__
+    assert socket.send_unicast_called[2][0].__dict__ == DataPacket(
         sender._sender_handler._CID, sender._sender_handler._source_name, 100, sequence=2, streamTerminated=True).__dict__
 
     # start with no universes active
